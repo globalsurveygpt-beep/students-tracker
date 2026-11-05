@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Концепции стиля — учёт посещаемости</title>
+<title>Концепции стиля, раунд 2 — учёт посещаемости</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:wght@400;600;700&family=Archivo:wght@400;500;600;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#e9ecf1;color:#1b2230;padding:24px 16px 64px;line-height:1.5}
@@ -65,22 +65,54 @@
   .chip.late{color:var(--warn);background:var(--warn-bg)}
   .hint{font-size:11.5px;color:var(--muted)}
 
-  /* ---- 1. Спокойный деловой ---- */
-  .c1{--font:'Inter',system-ui,sans-serif;--bg:#F6F8FB;--card:#FFFFFF;--text:#141B26;--muted:#5B6678;--border:#E1E6EE;--hover:#EEF2F8;
-      --accent:#2F6FED;--on-accent:#fff;--r:10px;--r-lg:12px;--shadow:none;--row-pad:10px;
-      --ok:#15803D;--ok-bg:#E6F4EA;--bad:#B91C1C;--bad-bg:#FBE9E9;--info:#0E7490;--info-bg:#E0F3F7;--warn:#B45309;--warn-bg:#FCEFD9}
-  /* ---- 2. Тёмная графитовая ---- */
-  .c2{--font:'Inter',system-ui,sans-serif;--bg:#0C0C0F;--card:#141419;--text:#E9E9EE;--muted:#8A8A97;--border:#24242E;--hover:#1C1C24;
-      --accent:#3A7BFD;--on-accent:#fff;--r:12px;--r-lg:14px;--shadow:none;--row-pad:10px;
-      --ok:#4ADE80;--ok-bg:#12261A;--bad:#F87171;--bad-bg:#2A1416;--info:#38BDF8;--info-bg:#10222C;--warn:#FBBF24;--warn-bg:#2A2110}
-  /* ---- 3. Учебный тёплый ---- */
-  .c3{--font:'Nunito',system-ui,sans-serif;--bg:#FAF7F2;--card:#FFFFFF;--text:#2A2420;--muted:#7A6F66;--border:#E8E0D5;--hover:#F4EEE5;
-      --accent:#1F8A70;--on-accent:#fff;--r:12px;--r-lg:16px;--shadow:0 2px 10px rgba(60,40,20,.07);--row-pad:11px;
-      --ok:#2E7D32;--ok-bg:#E5F2E6;--bad:#C62828;--bad-bg:#FBE8E8;--info:#1565C0;--info-bg:#E4EEFA;--warn:#C2701E;--warn-bg:#FBEBD6}
-  /* ---- 4. Контрастный чёткий ---- */
-  .c4{--font:'IBM Plex Sans',system-ui,sans-serif;--bg:#FFFFFF;--card:#FFFFFF;--text:#0A0A0A;--muted:#52525B;--border:#D4D4D8;--hover:#F4F4F5;
-      --accent:#6D28D9;--on-accent:#fff;--r:6px;--r-lg:8px;--shadow:none;--row-pad:7px;
-      --ok:#15803D;--ok-bg:#DCFCE7;--bad:#B91C1C;--bad-bg:#FEE2E2;--info:#1D4ED8;--info-bg:#DBEAFE;--warn:#B45309;--warn-bg:#FEF3C7}
+  /* ---- A. Классный журнал ---- */
+  .cA{--font:'Inter',system-ui,sans-serif;--serif:'Source Serif 4',Georgia,serif;--bg:#F3EBDD;--card:#FBF6EB;--text:#1E2A44;--muted:#5F6B85;--border:#CBD3E4;--hover:#EBE2D0;
+      --accent:#B3261E;--on-accent:#FBF6EB;--r:2px;--r-lg:2px;--shadow:0 1px 0 rgba(30,42,68,.18);--row-pad:11px;
+      --ok:#1E2A44;--ok-bg:transparent;--bad:#B3261E;--bad-bg:transparent;--info:#2F5D8A;--info-bg:transparent;--warn:#8A5A12;--warn-bg:transparent}
+  .cA .c-title,.cA .card h4,.cA .kpi b{font-family:var(--serif)}
+  .cA .c-num{font-family:var(--serif)}
+  .cA table.att td:first-child{border-left:3px double #B3261E;padding-left:14px;font-family:var(--serif);font-size:15px}
+  .cA .chip{border-radius:0;background:transparent;border-bottom:1.5px solid currentColor;padding:2px 4px}
+  .cA .btn{font-family:var(--serif);font-size:15px}
+  .cA .att-wrap{background:var(--card)}
+
+  /* ---- B. Швейцарская типографика ---- */
+  .cB{--font:'Archivo',system-ui,sans-serif;--bg:#FAFAF7;--card:#FFFFFF;--text:#111111;--muted:#5E5E5A;--border:#111111;--hover:#EFEFEA;
+      --accent:#FF4F00;--on-accent:#111;--r:0;--r-lg:0;--shadow:none;--row-pad:9px;
+      --ok:#0B7A43;--ok-bg:transparent;--bad:#C4001D;--bad-bg:transparent;--info:#1D4ED8;--info-bg:transparent;--warn:#8A5A00;--warn-bg:transparent}
+  .cB .c-head{border-bottom:3px solid #111}
+  .cB .c-num{color:#111}
+  .cB .c-title{text-transform:uppercase;letter-spacing:.5px;font-weight:800}
+  .cB .card{border:2px solid #111}
+  .cB .kpi b{font-size:38px;font-weight:800;letter-spacing:-1px}
+  .cB .att-wrap{border:2px solid #111}
+  .cB table.att th{border-bottom:3px solid #111;color:#111}
+  .cB table.att td{border-bottom:1px solid #111}
+  .cB .chip{border-radius:0;border:2px solid currentColor;background:transparent;text-transform:uppercase;font-size:11px;letter-spacing:.6px;padding:3px 8px 3px 6px}
+  .cB .btn{border-radius:0;text-transform:uppercase;letter-spacing:.6px;font-weight:800;border:2px solid #111}
+  .cB .btn-ghost{background:#fff}
+  .cB .sw,.cB .sw i{border-radius:0}
+  .cB .sw{border:2px solid #111}
+
+  /* ---- C. Университетский ---- */
+  .cC{--font:'Inter',system-ui,sans-serif;--serif:'Source Serif 4',Georgia,serif;--bg:#F7F2E9;--card:#FFFDF8;--text:#2B1A1E;--muted:#7A6A62;--border:#E3D6BC;--hover:#F0E8D8;
+      --accent:#6B1D2A;--on-accent:#F7F2E9;--r:3px;--r-lg:4px;--shadow:none;--row-pad:11px;
+      --ok:#2F5E34;--ok-bg:transparent;--bad:#A8282B;--bad-bg:transparent;--info:#245A7A;--info-bg:transparent;--warn:#8E5B14;--warn-bg:transparent}
+  .cC .c-head{border-bottom:2px solid #B08D57}
+  .cC .c-title,.cC .card h4,.cC .kpi b,.cC table.att th{font-family:var(--serif)}
+  .cC .card{border-top:3px solid #B08D57}
+  .cC .att-wrap{border-top:3px solid #B08D57}
+  .cC table.att th{letter-spacing:.8px}
+  .cC .chip{border-radius:3px;border:1px solid currentColor;background:transparent}
+  .cC .btn{font-family:var(--serif);font-size:15px;letter-spacing:.3px}
+  .cC .btn-primary{border-color:#B08D57}
+
+  /* ---- D. Хвойный ---- */
+  .cD{--font:'Manrope',system-ui,sans-serif;--bg:#0F2E2E;--card:#164040;--text:#E8DFCB;--muted:#9FB2A8;--border:#245252;--hover:#1D4B4B;
+      --accent:#E8715A;--on-accent:#1A0F0C;--r:14px;--r-lg:20px;--shadow:none;--row-pad:11px;
+      --ok:#9BE3A2;--ok-bg:#1F5238;--bad:#FFA89A;--bad-bg:#5A2E2B;--info:#9BD4F0;--info-bg:#1E4A5E;--warn:#F5CE7A;--warn-bg:#5C4818}
+  .cD .kpi b{color:#E8715A}
+  .cD .chip{border-radius:999px}
 </style>
 </head>
 <body>
@@ -96,78 +128,54 @@
 
 <div class="page">
   <header class="top">
-    <h1>Шаг 1. Четыре концепции стиля</h1>
-    <p>В каждой концепции — палитра, шрифт, геометрия и один и тот же фрагмент интерфейса: кнопки, карточка группы и таблица отметок. В таблице нажмите на статус студента: он переключается по кругу (был, не был, уважительная, опоздал), счётчики и процент обновляются. Выберите номер концепции.</p>
+    <h1>Шаг 1, раунд 2. Четыре концепции с характером</h1>
+    <p>В каждой концепции — палитра, шрифт, геометрия и один и тот же фрагмент интерфейса: кнопки, карточка группы и таблица отметок. В таблице нажмите на статус студента: он переключается по кругу (был, не был, уважительная, опоздал), счётчики и процент обновляются. Выберите букву: A, B, C или D.</p>
   </header>
 
   <div class="grid">
 
-    <!-- 1 -->
-    <section class="concept c1" data-concept>
-      <div class="c-head"><div class="c-num">1</div><div><div class="c-title">Спокойный деловой</div><div class="c-sub">светлая, строгая, почти без теней</div></div></div>
+    <!-- A -->
+    <section class="concept cA" data-concept>
+      <div class="c-head"><div class="c-num">A</div><div><div class="c-title">Классный журнал</div><div class="c-sub">бумага и чернила, красная ручка</div></div></div>
       <div class="c-body">
-        <div><div class="lbl">Палитра</div><div class="swatches">
-          <div class="sw"><i style="background:#F6F8FB"></i><b>Фон</b><span>#F6F8FB</span></div>
-          <div class="sw"><i style="background:#FFFFFF"></i><b>Карточка</b><span>#FFFFFF</span></div>
-          <div class="sw"><i style="background:#141B26"></i><b>Текст</b><span>#141B26</span></div>
-          <div class="sw"><i style="background:#2F6FED"></i><b>Акцент</b><span>#2F6FED</span></div>
-          <div class="sw"><i style="background:#E1E6EE"></i><b>Граница</b><span>#E1E6EE</span></div>
-        </div></div>
-        <div class="meta"><b>Шрифт:</b> Inter. <b>Радиусы:</b> 10 / 12 px. <b>Плотность:</b> средняя. Спокойная административная система без декоративности.</div>
+        <div><div class="lbl">Палитра</div><div class="swatches"><div class="sw"><i style="background:#F3EBDD"></i><b>Бумага</b><span>#F3EBDD</span></div><div class="sw"><i style="background:#FBF6EB"></i><b>Карточка</b><span>#FBF6EB</span></div><div class="sw"><i style="background:#1E2A44"></i><b>Чернила</b><span>#1E2A44</span></div><div class="sw"><i style="background:#B3261E"></i><b>Красная ручка</b><span>#B3261E</span></div><div class="sw"><i style="background:#CBD3E4"></i><b>Линовка</b><span>#CBD3E4</span></div></div></div>
+        <div class="meta"><b>Шрифты:</b> Source Serif 4 (заголовки, имена), Inter (интерфейс). <b>Радиусы:</b> 2 px. Линовка как в тетради, красная двойная линия поля. Статусы без заливки, подчёркнуты, как пометки ручкой.</div>
         <div class="row"><button class="btn btn-primary"><svg><use href="#i-save"/></svg>Сохранить</button><button class="btn btn-ghost">Отмена</button></div>
         <div class="card"><h4>ИС-21</h4><div class="s">Группа, набор 2021</div><div class="kpis"><div class="kpi"><b>24</b><span>студента</span></div><div class="kpi"><b>91%</b><span>посещаемость</span></div></div></div>
         <div data-att></div>
       </div>
     </section>
 
-    <!-- 2 -->
-    <section class="concept c2" data-concept>
-      <div class="c-head"><div class="c-num">2</div><div><div class="c-title">Тёмная графитовая</div><div class="c-sub">тёмная, мягкие границы</div></div></div>
+    <!-- B -->
+    <section class="concept cB" data-concept>
+      <div class="c-head"><div class="c-num">B</div><div><div class="c-title">Швейцарская типографика</div><div class="c-sub">белый, чёрный, один сигнальный цвет</div></div></div>
       <div class="c-body">
-        <div><div class="lbl">Палитра</div><div class="swatches">
-          <div class="sw"><i style="background:#0C0C0F"></i><b>Фон</b><span>#0C0C0F</span></div>
-          <div class="sw"><i style="background:#141419"></i><b>Карточка</b><span>#141419</span></div>
-          <div class="sw"><i style="background:#E9E9EE"></i><b>Текст</b><span>#E9E9EE</span></div>
-          <div class="sw"><i style="background:#3A7BFD"></i><b>Акцент</b><span>#3A7BFD</span></div>
-          <div class="sw"><i style="background:#24242E"></i><b>Граница</b><span>#24242E</span></div>
-        </div></div>
-        <div class="meta"><b>Шрифт:</b> Inter. <b>Радиусы:</b> 12 / 14 px. <b>Плотность:</b> средняя. Близко к стилю примера с мессенджером.</div>
+        <div><div class="lbl">Палитра</div><div class="swatches"><div class="sw"><i style="background:#FAFAF7"></i><b>Фон</b><span>#FAFAF7</span></div><div class="sw"><i style="background:#FFFFFF"></i><b>Карточка</b><span>#FFFFFF</span></div><div class="sw"><i style="background:#111111"></i><b>Чёрный</b><span>#111111</span></div><div class="sw"><i style="background:#FF4F00"></i><b>Сигнал</b><span>#FF4F00</span></div><div class="sw"><i style="background:#5E5E5A"></i><b>Серый</b><span>#5E5E5A</span></div></div></div>
+        <div class="meta"><b>Шрифт:</b> Archivo. <b>Радиусов нет.</b> Толстые линии сетки 2–3 px, крупные цифры, заглавные кнопки. Печатный отчёт, а не приложение.</div>
         <div class="row"><button class="btn btn-primary"><svg><use href="#i-save"/></svg>Сохранить</button><button class="btn btn-ghost">Отмена</button></div>
         <div class="card"><h4>ИС-21</h4><div class="s">Группа, набор 2021</div><div class="kpis"><div class="kpi"><b>24</b><span>студента</span></div><div class="kpi"><b>91%</b><span>посещаемость</span></div></div></div>
         <div data-att></div>
       </div>
     </section>
 
-    <!-- 3 -->
-    <section class="concept c3" data-concept>
-      <div class="c-head"><div class="c-num">3</div><div><div class="c-title">Учебный тёплый</div><div class="c-sub">светлая, мягкая, с тенями</div></div></div>
+    <!-- C -->
+    <section class="concept cC" data-concept>
+      <div class="c-head"><div class="c-num">C</div><div><div class="c-title">Университетский</div><div class="c-sub">бордо, слоновая кость, латунь</div></div></div>
       <div class="c-body">
-        <div><div class="lbl">Палитра</div><div class="swatches">
-          <div class="sw"><i style="background:#FAF7F2"></i><b>Фон</b><span>#FAF7F2</span></div>
-          <div class="sw"><i style="background:#FFFFFF"></i><b>Карточка</b><span>#FFFFFF</span></div>
-          <div class="sw"><i style="background:#2A2420"></i><b>Текст</b><span>#2A2420</span></div>
-          <div class="sw"><i style="background:#1F8A70"></i><b>Акцент</b><span>#1F8A70</span></div>
-          <div class="sw"><i style="background:#E8E0D5"></i><b>Граница</b><span>#E8E0D5</span></div>
-        </div></div>
-        <div class="meta"><b>Шрифт:</b> Nunito. <b>Радиусы:</b> 12 / 16 px. <b>Плотность:</b> свободная. Дружелюбное, подходит учебному заведению. Зелёный акцент рядом со статусом «был» требует внимания.</div>
+        <div><div class="lbl">Палитра</div><div class="swatches"><div class="sw"><i style="background:#F7F2E9"></i><b>Слоновая кость</b><span>#F7F2E9</span></div><div class="sw"><i style="background:#FFFDF8"></i><b>Карточка</b><span>#FFFDF8</span></div><div class="sw"><i style="background:#2B1A1E"></i><b>Текст</b><span>#2B1A1E</span></div><div class="sw"><i style="background:#6B1D2A"></i><b>Бордо</b><span>#6B1D2A</span></div><div class="sw"><i style="background:#B08D57"></i><b>Латунь</b><span>#B08D57</span></div></div></div>
+        <div class="meta"><b>Шрифты:</b> Source Serif 4 (заголовки, кнопки), Inter. <b>Радиусы:</b> 3–4 px. Золотые линии под шапкой и над блоками, сдержанный и солидный тон.</div>
         <div class="row"><button class="btn btn-primary"><svg><use href="#i-save"/></svg>Сохранить</button><button class="btn btn-ghost">Отмена</button></div>
         <div class="card"><h4>ИС-21</h4><div class="s">Группа, набор 2021</div><div class="kpis"><div class="kpi"><b>24</b><span>студента</span></div><div class="kpi"><b>91%</b><span>посещаемость</span></div></div></div>
         <div data-att></div>
       </div>
     </section>
 
-    <!-- 4 -->
-    <section class="concept c4" data-concept>
-      <div class="c-head"><div class="c-num">4</div><div><div class="c-title">Контрастный чёткий</div><div class="c-sub">светлая, плотная, высокий контраст</div></div></div>
+    <!-- D -->
+    <section class="concept cD" data-concept>
+      <div class="c-head"><div class="c-num">D</div><div><div class="c-title">Хвойный</div><div class="c-sub">тёмно-зелёный, песок, коралл</div></div></div>
       <div class="c-body">
-        <div><div class="lbl">Палитра</div><div class="swatches">
-          <div class="sw"><i style="background:#FFFFFF"></i><b>Фон</b><span>#FFFFFF</span></div>
-          <div class="sw"><i style="background:#F4F4F5"></i><b>Наведение</b><span>#F4F4F5</span></div>
-          <div class="sw"><i style="background:#0A0A0A"></i><b>Текст</b><span>#0A0A0A</span></div>
-          <div class="sw"><i style="background:#6D28D9"></i><b>Акцент</b><span>#6D28D9</span></div>
-          <div class="sw"><i style="background:#D4D4D8"></i><b>Граница</b><span>#D4D4D8</span></div>
-        </div></div>
-        <div class="meta"><b>Шрифт:</b> IBM Plex Sans. <b>Радиусы:</b> 6 / 8 px. <b>Плотность:</b> высокая. Максимум строк на экране, на 360 px будет тесно.</div>
+        <div><div class="lbl">Палитра</div><div class="swatches"><div class="sw"><i style="background:#0F2E2E"></i><b>Фон</b><span>#0F2E2E</span></div><div class="sw"><i style="background:#164040"></i><b>Карточка</b><span>#164040</span></div><div class="sw"><i style="background:#E8DFCB"></i><b>Песок</b><span>#E8DFCB</span></div><div class="sw"><i style="background:#E8715A"></i><b>Коралл</b><span>#E8715A</span></div><div class="sw"><i style="background:#245252"></i><b>Граница</b><span>#245252</span></div></div></div>
+        <div class="meta"><b>Шрифт:</b> Manrope. <b>Радиусы:</b> 14 / 20 px. Глубокий сине-зелёный вместо чёрного, коралловый акцент и цифры, крупные мягкие формы.</div>
         <div class="row"><button class="btn btn-primary"><svg><use href="#i-save"/></svg>Сохранить</button><button class="btn btn-ghost">Отмена</button></div>
         <div class="card"><h4>ИС-21</h4><div class="s">Группа, набор 2021</div><div class="kpis"><div class="kpi"><b>24</b><span>студента</span></div><div class="kpi"><b>91%</b><span>посещаемость</span></div></div></div>
         <div data-att></div>
