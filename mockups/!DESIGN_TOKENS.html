@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Tokens — учёт посещаемости студентов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* =====================================================================
+     ЕДИНЫЙ ИСТОЧНИК ДИЗАЙНА. Все макеты берут значения только отсюда.
+     Темы: светлая (по умолчанию) и тёмная. Имена переменных одинаковы.
+     ===================================================================== */
+
+  /* ---- токены вне тем ---- */
+  :root{
+    --font:'Manrope',system-ui,-apple-system,"Segoe UI",sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,Consolas,monospace;
+
+    --fs-caption:12px; --fs-small:13px; --fs-body:14px; --fs-lead:16px;
+    --fs-h3:20px; --fs-h2:24px; --fs-h1:32px;
+
+    --r-sm:8px; --r:14px; --r-lg:20px; --r-pill:999px;
+
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px;
+    --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px;
+
+    --row-pad:11px;
+  }
+
+  /* ---- светлая тема (вариант 4, акцент унифицирован: сирень) ---- */
+  :root,[data-theme="light"]{
+    --bg:#F3F4F6; --card:#FFFFFF; --text:#1C1E22; --muted:#656A73;
+    --border:#E0E3E8; --hover:#EAECF0;
+    --accent:#6D4FD1; --on-accent:#FFFFFF;
+    --ok:#1F7A3F;   --ok-bg:#E2F2E7;
+    --bad:#B3261E;  --bad-bg:#FBE7E5;
+    --info:#0B6B74; --info-bg:#DDF1F2;
+    --warn:#935C00; --warn-bg:#FBF0D4;
+    --shadow:0 1px 3px rgba(20,20,20,.07);
+  }
+
+  /* ---- тёмная тема (вариант 5) ---- */
+  [data-theme="dark"]{
+    --bg:#16181B; --card:#1F2226; --text:#E6E2DC; --muted:#9A9CA0;
+    --border:#2E3338; --hover:#272B30;
+    --accent:#A78BFA; --on-accent:#150C2E;
+    --ok:#7DD39A;   --ok-bg:#1E3A2A;
+    --bad:#F28B82;  --bad-bg:#4A2624;
+    --info:#6FD3E0; --info-bg:#1B3F46;
+    --warn:#E6C15A; --warn-bg:#463A16;
+    --shadow:none;
+  }
+
+  /* =====================================================================
+     Оформление самой страницы токенов
+     ===================================================================== */
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);padding:24px 20px 80px;line-height:1.55;font-size:var(--fs-body)}
+  code,.mono{font-family:var(--font-mono)}
+  .doc{max-width:1120px;margin:0 auto}
+  .doc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+  .doc-head h1{font-size:var(--fs-h2);font-weight:800;letter-spacing:-.3px}
+  .doc-head .sub{font-size:var(--fs-small);color:var(--muted);max-width:640px;margin-top:6px}
+  .theme-switch{display:inline-flex;border:1px solid var(--border);border-radius:var(--r-pill);overflow:hidden;background:var(--card)}
+  .theme-switch button{font-family:inherit;font-size:var(--fs-small);font-weight:600;padding:8px 16px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+  .theme-switch button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+
+  .toc{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 20px;margin-bottom:40px;box-shadow:var(--shadow)}
+  .toc h2{font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .toc ol{list-style:none;counter-reset:toc;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px 24px}
+  .toc li{counter-increment:toc;padding:3px 0}
+  .toc li::before{content:counter(toc) ". ";color:var(--muted)}
+  .toc a{color:var(--text);text-decoration:none}
+  .toc a:hover{color:var(--accent)}
+
+  section{margin-bottom:56px;scroll-margin-top:16px}
+  h2.sec{font-size:var(--fs-h3);font-weight:800;letter-spacing:-.2px;margin-bottom:6px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:baseline}
+  h2.sec .num{color:var(--accent);font-family:var(--font-mono);font-weight:700}
+  h3.sub{font-size:var(--fs-lead);font-weight:700;margin:24px 0 12px}
+  .lead{font-size:var(--fs-small);color:var(--muted);margin-bottom:16px;max-width:760px}
+  .note{background:var(--card);border-left:3px solid var(--accent);border-radius:4px;padding:12px 16px;margin:14px 0;font-size:var(--fs-small);color:var(--muted)}
+  .note b{color:var(--text)}
+
+  /* панели тем */
+  .theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:860px){.theme-grid{grid-template-columns:1fr}}
+  .theme-col{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+  .th-head{padding:12px 20px;background:var(--card);border-bottom:1px solid var(--border);font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+  .col-list{padding:8px 0}
+  .col-row{display:grid;grid-template-columns:44px 1fr auto;gap:14px;padding:8px 20px;align-items:center}
+  .col-sw{width:44px;height:34px;border-radius:var(--r-sm);border:1px solid var(--border)}
+  .col-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+  .col-hex{font-family:var(--font-mono);font-size:13px;font-weight:600}
+  .col-use{font-size:11.5px;color:var(--muted);line-height:1.35}
+  .col-var{font-family:var(--font-mono);font-size:10.5px;padding:3px 7px;background:var(--card);border:1px solid var(--border);border-radius:5px;color:var(--accent);white-space:nowrap}
+
+  /* таблицы документации */
+  table.doc-t{width:100%;border-collapse:collapse;font-size:var(--fs-small);background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+  table.doc-t th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--border)}
+  table.doc-t td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  table.doc-t tr:last-child td{border-bottom:none}
+  .pass{color:var(--ok);font-weight:700}
+  .fail{color:var(--bad);font-weight:700}
+  .tbl-scroll{overflow-x:auto}
+
+  /* типографика, радиусы, отступы */
+  .type-row{display:grid;grid-template-columns:150px 1fr auto;gap:16px;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--border)}
+  .type-row:last-child{border-bottom:none}
+  @media(max-width:640px){.type-row{grid-template-columns:1fr;gap:4px}.type-row .type-meta{order:3}.type-row > span:nth-child(2){overflow-wrap:anywhere}}
+  .type-meta{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+  .type-name{font-size:12px;font-weight:600;color:var(--muted)}
+  .radii{display:flex;gap:16px;flex-wrap:wrap}
+  .radius-box{width:120px;text-align:center;font-size:12px;color:var(--muted)}
+  .radius-box i{display:block;height:64px;background:var(--hover);border:1px solid var(--border);margin-bottom:8px}
+  .space-row{display:flex;align-items:center;gap:14px;padding:5px 0;font-size:12px}
+  .space-row i{display:block;height:14px;background:var(--accent);border-radius:3px}
+  .space-row .mono{width:96px;color:var(--muted)}
+
+  /* компоненты (эталонные) */
+  .btn{font-family:inherit;font-size:var(--fs-body);font-weight:600;padding:9px 16px;border-radius:var(--r);border:1px solid transparent;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:filter .15s}
+  .btn svg{width:16px;height:16px}
+  .btn-primary{background:var(--accent);color:var(--on-accent)}
+  .btn-primary:hover{filter:brightness(1.08)}
+  .btn-ghost{background:transparent;color:var(--text);border-color:var(--border)}
+  .btn-ghost:hover{background:var(--hover)}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;box-shadow:var(--shadow)}
+  .card h4{font-size:15px;font-weight:700}
+  .card .s{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .kpis{display:flex;gap:18px;margin-top:12px}
+  .kpi b{display:block;font-size:20px;font-weight:700;color:var(--accent)}
+  .kpi span{font-size:11.5px;color:var(--muted)}
+  .chip{font-family:inherit;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;border-radius:var(--r-pill);border:1px solid transparent}
+  .chip svg{width:14px;height:14px}
+  .chip.present{color:var(--ok);background:var(--ok-bg)}
+  .chip.absent{color:var(--bad);background:var(--bad-bg)}
+  .chip.excused{color:var(--info);background:var(--info-bg)}
+  .chip.late{color:var(--warn);background:var(--warn-bg)}
+  .comp-stack{padding:20px;display:flex;flex-direction:column;gap:16px}
+  .lbl{font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+
+  /* иконки */
+  .icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .icon-cell{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px 12px;text-align:center}
+  .icon-cell svg{width:28px;height:28px;color:var(--text)}
+  .icon-cell .n{font-size:12.5px;font-weight:600;margin-top:8px}
+  .icon-cell .id{font-family:var(--font-mono);font-size:10.5px;color:var(--muted)}
+  pre.code{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;font-family:var(--font-mono);font-size:12px;overflow-x:auto;line-height:1.55;color:var(--text)}
+</style>
+</head>
+<body>
+
+<!-- Иконки: общий спрайт. Правила: viewBox 24x24, stroke currentColor, ширина 2, скруглённые концы, без заливки. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-present" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-absent" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-excused" viewBox="0 0 24 24"><path d="M7 3.5h7l4 4V20a.5.5 0 01-.5.5h-10.5a.5.5 0 01-.5-.5V4a.5.5 0 01.5-.5z M14 3.5V8h4 M9.5 13h5 M9.5 16.5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-late" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z M8 4v5h7V4 M8 20v-6h8v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-brand" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M8 3v4M16 3v4M9 15l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 6.2A9.8 9.8 0 0112 6c6.5 0 10 6 10 6a17 17 0 01-3.2 3.9M6.5 7.6C3.8 9.4 2 12 2 12s3.5 6 10 6c1.5 0 2.8-.3 4-.8M9.9 9.9a3 3 0 004.2 4.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5v5M12 16.5h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 5H6a1 1 0 00-1 1v14a1 1 0 001 1h12a1 1 0 001-1V6a1 1 0 00-1-1h-1M9 14l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16M8 16v-4M12 16V8M16 16v-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.5 20c0-3.6 2.9-5.5 6.5-5.5s6.5 1.9 6.5 5.5M16 4.8a3.5 3.5 0 010 6.4M18 14.8c2.2.6 3.5 2.4 3.5 5.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 015.5 4H19v14H5.5A1.5 1.5 0 004 19.5zM4 19.5A1.5 1.5 0 005.5 21H19M8 8h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5.5c0 4.3-3 8-7 9.5-4-1.5-7-5.2-7-9.5V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M11 12l9-9M16 7l3 3M18 5l2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 012 2v12a2 2 0 01-2 2h-3M10 16l-4-4 4-4M6 12h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v8M7 6.3a7 7 0 1010 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</svg>
+
+<div class="doc">
+
+  <header class="doc-head">
+    <div>
+      <h1>Design Tokens — учёт посещаемости студентов</h1>
+      <p class="sub">Единый источник дизайна для всех макетов и итогового интерфейса. Значения берутся отсюда и больше нигде не придумываются заново. Страница растёт вместе с принятыми экранами: новые токены и иконки добавляются по мере утверждения.</p>
+    </div>
+    <div class="theme-switch" role="group" aria-label="Тема страницы">
+      <button type="button" data-set-theme="light" aria-pressed="true">Светлая</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Тёмная</button>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <h2>Содержание</h2>
+    <ol>
+      <li><a href="#s-decisions">Принятые решения</a></li>
+      <li><a href="#s-colors">Цвета</a></li>
+      <li><a href="#s-contrast">Контраст</a></li>
+      <li><a href="#s-type">Типографика</a></li>
+      <li><a href="#s-geometry">Радиусы, отступы, тени</a></li>
+      <li><a href="#s-components">Базовые компоненты</a></li>
+      <li><a href="#s-icons">Иконки SVG</a></li>
+      <li><a href="#s-css">CSS-переменные</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section id="s-decisions">
+    <h2 class="sec"><span class="num">1</span>Принятые решения</h2>
+    <p class="lead">Журнал утверждённых параметров. Каждое решение фиксируется здесь до того, как попадает в макеты.</p>
+    <div class="tbl-scroll"><table class="doc-t">
+      <thead><tr><th>Дата</th><th>Параметр</th><th>Решение</th></tr></thead>
+      <tbody>
+        <tr><td>05.11.2026</td><td>Тема</td><td>Две темы: светлая (по умолчанию по системной настройке) и тёмная, переключатель с запоминанием выбора.</td></tr>
+        <tr><td>05.11.2026</td><td>Основа</td><td>Вариант D3: графит, шрифт Manrope, радиусы 14 и 20 px.</td></tr>
+        <tr><td>05.11.2026</td><td>Светлая тема</td><td>Вариант 4: холодный светлый фон. Акцент унифицирован с тёмной темой (сирень), в светлой потемнён до <code>#6D4FD1</code>.</td></tr>
+        <tr><td>05.11.2026</td><td>Тёмная тема</td><td>Вариант 5: графит, акцент <code>#A78BFA</code>.</td></tr>
+        <tr><td>05.11.2026</td><td>Статусы</td><td>Одна палитра статусов на обе темы: «Был» зелёный, «Не был» красный, «Уважительная» бирюзовый, «Опоздал» жёлтый. Статус всегда обозначается иконкой и текстом, не только цветом.</td></tr>
+        <tr><td>05.11.2026</td><td>Иконки</td><td>Только SVG, 24x24, линия 2 px, скруглённые концы, цвет <code>currentColor</code>. Без эмодзи.</td></tr>
+        <tr><td>06.11.2026</td><td>Адаптивность</td><td>Desktop-first для всех экранов, основной макет от 1280 px. Меню сворачивается ниже 1100 px, панели схлопываются ниже 900 px, таблицы становятся карточками ниже 768 px. Кабинет студента обязательно проверяется на 360, 768 и 1280 px.</td></tr>
+        <tr><td>06.11.2026</td><td>Экран «Вход»</td><td>Разделённый экран: слева название и описание, справа форма. Без «Запомнить меня» и без регистрации. Одно общее сообщение об ошибке. Переключатель темы в углу. Принят после одобрения.</td></tr>
+        <tr><td>08.11.2026</td><td>Прототип</td><td>Все экраны собраны в кликабельный прототип <code>02-prototype.html</code>: вход, группы и студенты, предметы, пользователи и назначения, мои занятия, отметка посещаемости, отчёты, кабинет студента, смена пароля. Отметка статуса — сегментный переключатель из четырёх кнопок; на телефоне только иконки.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note"><b>Открыто:</b> Шрифт сейчас подключается с Google Fonts. Для защиты без интернета файлы шрифта переедут в <code>wwwroot/fonts</code>.</div>
+  </section>
+
+  <!-- 2 -->
+  <section id="s-colors">
+    <h2 class="sec"><span class="num">2</span>Цвета</h2>
+    <p class="lead">Имена переменных одинаковы в обеих темах, меняются только значения. Значения на странице читаются из CSS, поэтому всегда совпадают с реальными.</p>
+    <div class="theme-grid" id="color-grid"></div>
+  </section>
+
+  <!-- 3 -->
+  <section id="s-contrast">
+    <h2 class="sec"><span class="num">3</span>Контраст</h2>
+    <p class="lead">Рассчитывается на странице по формуле WCAG. Порог для обычного текста — 4,5. Значения ниже порога отмечаются красным.</p>
+    <div class="tbl-scroll"><table class="doc-t" id="contrast-table"></table></div>
+  </section>
+
+  <!-- 4 -->
+  <section id="s-type">
+    <h2 class="sec"><span class="num">4</span>Типографика</h2>
+    <p class="lead">Шрифт — Manrope, веса 400, 500, 600, 700, 800. Моноширинный — системный (для кодов и значений).</p>
+    <div class="card" style="padding:8px 20px">
+      <div class="type-row"><span class="type-name">h1 / 32 / 800</span><span style="font-size:var(--fs-h1);font-weight:800;letter-spacing:-.5px">Посещаемость</span><span class="type-meta">--fs-h1</span></div>
+      <div class="type-row"><span class="type-name">h2 / 24 / 800</span><span style="font-size:var(--fs-h2);font-weight:800;letter-spacing:-.3px">Группа ИС-21</span><span class="type-meta">--fs-h2</span></div>
+      <div class="type-row"><span class="type-name">h3 / 20 / 700</span><span style="font-size:var(--fs-h3);font-weight:700">Отметка посещаемости</span><span class="type-meta">--fs-h3</span></div>
+      <div class="type-row"><span class="type-name">lead / 16 / 500</span><span style="font-size:var(--fs-lead);font-weight:500">Азизов Фарход, 2 пара, 12.11.2026</span><span class="type-meta">--fs-lead</span></div>
+      <div class="type-row"><span class="type-name">body / 14 / 400</span><span style="font-size:var(--fs-body)">Основной текст интерфейса, строки таблиц, подписи полей.</span><span class="type-meta">--fs-body</span></div>
+      <div class="type-row"><span class="type-name">small / 13 / 400</span><span style="font-size:var(--fs-small);color:var(--muted)">Вторичный текст, подсказки, описания.</span><span class="type-meta">--fs-small</span></div>
+      <div class="type-row"><span class="type-name">caption / 12 / 600</span><span style="font-size:var(--fs-caption);font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)">Заголовок колонки таблицы</span><span class="type-meta">--fs-caption</span></div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section id="s-geometry">
+    <h2 class="sec"><span class="num">5</span>Радиусы, отступы, тени</h2>
+    <h3 class="sub">Радиусы</h3>
+    <div class="radii">
+      <div class="radius-box"><i style="border-radius:var(--r-sm)"></i>--r-sm<br>8 px, мелкие элементы</div>
+      <div class="radius-box"><i style="border-radius:var(--r)"></i>--r<br>14 px, кнопки, поля</div>
+      <div class="radius-box"><i style="border-radius:var(--r-lg)"></i>--r-lg<br>20 px, карточки, таблицы</div>
+      <div class="radius-box"><i style="border-radius:var(--r-pill)"></i>--r-pill<br>999 px, бейджи статусов</div>
+    </div>
+    <h3 class="sub">Шкала отступов (база 4 px)</h3>
+    <div class="card" style="padding:12px 20px" id="space-list"></div>
+    <h3 class="sub">Тени</h3>
+    <p class="lead">В светлой теме — лёгкая тень карточек <code>0 1px 3px rgba(20,20,20,.07)</code>. В тёмной тени нет: слои разделяются цветом и границей. Переменная <code>--shadow</code>.</p>
+  </section>
+
+  <!-- 6 -->
+  <section id="s-components">
+    <h2 class="sec"><span class="num">6</span>Базовые компоненты</h2>
+    <p class="lead">Эталонный вид кнопок, карточки, бейджей статусов и таблицы отметок в обеих темах. Новые компоненты добавляются после утверждения экранов.</p>
+    <div class="theme-grid" id="comp-grid"></div>
+  </section>
+
+  <!-- 7 -->
+  <section id="s-icons">
+    <h2 class="sec"><span class="num">7</span>Иконки SVG</h2>
+    <p class="lead">Правила: viewBox 24x24, линия 2 px, скруглённые концы и углы, без заливки, цвет через <code>currentColor</code>. Использование: <code>&lt;svg&gt;&lt;use href="#i-save"/&gt;&lt;/svg&gt;</code>. Набор пополняется по мере появления экранов.</p>
+    <div class="icon-grid" id="icon-grid"></div>
+  </section>
+
+  <!-- 8 -->
+  <section id="s-css">
+    <h2 class="sec"><span class="num">8</span>CSS-переменные</h2>
+    <p class="lead">Полный блок значений из этой страницы для копирования в стили приложения.</p>
+    <pre class="code" id="css-dump"></pre>
+  </section>
+
+</div>
+
+<script>
+  /* ---------- тема страницы ---------- */
+  var THEME_KEY = 'ds-theme';
+  function readSaved() { try { return localStorage.getItem(THEME_KEY); } catch (e) { return null; } }
+  function saveTheme(t) { try { localStorage.setItem(THEME_KEY, t); } catch (e) {} }
+  function systemTheme() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    document.querySelectorAll('[data-set-theme]').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.getAttribute('data-set-theme') === t ? 'true' : 'false');
+    });
+  }
+  applyTheme(readSaved() || systemTheme());
+  document.querySelectorAll('[data-set-theme]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = b.getAttribute('data-set-theme');
+      applyTheme(t); saveTheme(t);
+    });
+  });
+
+  /* ---------- данные ---------- */
+  var COLORS = [
+    ['Фон страницы',        '--bg',        'Общий фон приложения'],
+    ['Карточка',            '--card',      'Карточки, таблицы, панели, шапка'],
+    ['Текст',               '--text',      'Основной текст'],
+    ['Приглушённый текст',  '--muted',     'Подписи, подсказки, заголовки колонок'],
+    ['Граница',             '--border',    'Линии, рамки карточек и таблиц'],
+    ['Наведение',           '--hover',     'Фон при наведении на кнопки и строки'],
+    ['Акцент',              '--accent',    'Главные кнопки, ключевые цифры, активные элементы'],
+    ['Текст на акценте',    '--on-accent', 'Текст внутри кнопки с акцентом'],
+    ['Был',                 '--ok',        'Статус present: текст и иконка'],
+    ['Был, фон',            '--ok-bg',     'Фон бейджа present'],
+    ['Не был',              '--bad',       'Статус absent и ошибки: текст и иконка'],
+    ['Не был, фон',         '--bad-bg',    'Фон бейджа absent'],
+    ['Уважительная',        '--info',      'Статус excused: текст и иконка'],
+    ['Уважительная, фон',   '--info-bg',   'Фон бейджа excused'],
+    ['Опоздал',             '--warn',      'Статус late и предупреждения'],
+    ['Опоздал, фон',        '--warn-bg',   'Фон бейджа late']
+  ];
+
+  var CONTRAST = [
+    ['Текст на фоне',             '--text',      '--bg'],
+    ['Текст на карточке',         '--text',      '--card'],
+    ['Приглушённый на фоне',      '--muted',     '--bg'],
+    ['Приглушённый на карточке',  '--muted',     '--card'],
+    ['Акцент на карточке',        '--accent',    '--card'],
+    ['Кнопка: текст на акценте',  '--on-accent', '--accent'],
+    ['Был',                       '--ok',        '--ok-bg'],
+    ['Не был',                    '--bad',       '--bad-bg'],
+    ['Уважительная',              '--info',      '--info-bg'],
+    ['Опоздал',                   '--warn',      '--warn-bg']
+  ];
+
+  var SPACES = [['--sp-1',4],['--sp-2',8],['--sp-3',12],['--sp-4',16],['--sp-5',20],['--sp-6',24],['--sp-8',32],['--sp-10',40],['--sp-12',48]];
+
+  var ICONS = [
+    ['i-present', 'Был', 'статус present'],
+    ['i-absent',  'Не был', 'статус absent'],
+    ['i-excused', 'Уважительная', 'статус excused'],
+    ['i-late',    'Опоздал', 'статус late'],
+    ['i-save',    'Сохранить', 'кнопка сохранения'],
+    ['i-brand',   'Знак системы', 'календарь с отметкой, логотип'],
+    ['i-user',    'Пользователь', 'поле логина, кабинет'],
+    ['i-lock',    'Замок', 'поле пароля'],
+    ['i-eye',     'Показать', 'показ пароля'],
+    ['i-eye-off', 'Скрыть', 'скрытие пароля'],
+    ['i-sun',     'Светлая тема', 'переключатель темы'],
+    ['i-moon',    'Тёмная тема', 'переключатель темы'],
+    ['i-alert',   'Внимание', 'ошибки и подсказки'],
+    ['i-clipboard','Отметка', 'отметка посещаемости'],
+    ['i-chart',   'Отчёты', 'отчёты и статистика'],
+    ['i-check', 'Готово', 'подтверждение, отмечено'],
+    ['i-users', 'Группы', 'группы и студенты'],
+    ['i-book', 'Предметы', 'справочник предметов'],
+    ['i-shield', 'Доступ', 'пользователи и назначения'],
+    ['i-calendar', 'Занятия', 'мои занятия, даты'],
+    ['i-home', 'Кабинет', 'кабинет студента'],
+    ['i-key', 'Пароль', 'учётная запись, сброс и смена пароля'],
+    ['i-logout', 'Выйти', 'выход из системы'],
+    ['i-plus', 'Добавить', 'кнопки добавления'],
+    ['i-edit', 'Изменить', 'редактирование'],
+    ['i-trash', 'Удалить', 'удаление'],
+    ['i-search', 'Поиск', 'поле поиска'],
+    ['i-x', 'Закрыть', 'закрытие окна'],
+    ['i-menu', 'Меню', 'мобильное меню'],
+    ['i-chevron-left', 'Назад', 'возврат к списку'],
+    ['i-power', 'Вкл/выкл', 'отключение учётной записи']
+  ];
+
+  var STUDENTS = [
+    ['Азизов Фарход', 'present'], ['Каримова Нодира', 'present'], ['Рахимов Далер', 'late'],
+    ['Саидова Мехрубон', 'absent'], ['Холиқов Умар', 'excused']
+  ];
+  var STATUS = {
+    present: ['Был', 'i-present'], absent: ['Не был', 'i-absent'],
+    excused: ['Уважительная', 'i-excused'], late: ['Опоздал', 'i-late']
+  };
+
+  /* ---------- вспомогательное ---------- */
+  function cssVar(el, name) { return getComputedStyle(el).getPropertyValue(name).trim(); }
+  function toRgb(hex) {
+    var h = hex.replace('#', '');
+    if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join('');
+    return [0, 2, 4].map(function (i) { return parseInt(h.substr(i, 2), 16) / 255; });
+  }
+  function lum(hex) {
+    var c = toRgb(hex).map(function (v) { return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function ratio(a, b) {
+    var x = Math.max(lum(a), lum(b)), y = Math.min(lum(a), lum(b));
+    return (x + 0.05) / (y + 0.05);
+  }
+  function themeName(t) { return t === 'light' ? 'Светлая тема' : 'Тёмная тема'; }
+
+  /* ---------- 2. цвета ---------- */
+  var colorGrid = document.getElementById('color-grid');
+  ['light', 'dark'].forEach(function (t) {
+    var col = document.createElement('div');
+    col.className = 'theme-col'; col.setAttribute('data-theme', t);
+    var html = '<div class="th-head">' + themeName(t) + '</div><div class="col-list">';
+    COLORS.forEach(function (c) {
+      html += '<div class="col-row"><div class="col-sw" style="background:var(' + c[1] + ')"></div>' +
+        '<div><div class="col-lbl">' + c[0] + '</div><div class="col-hex" data-var="' + c[1] + '"></div>' +
+        '<div class="col-use">' + c[2] + '</div></div><div class="col-var">' + c[1] + '</div></div>';
+    });
+    col.innerHTML = html + '</div>';
+    colorGrid.appendChild(col);
+    col.querySelectorAll('[data-var]').forEach(function (n) {
+      n.textContent = cssVar(col, n.getAttribute('data-var')).toUpperCase();
+    });
+  });
+
+  /* ---------- 3. контраст ---------- */
+  (function () {
+    var probes = {};
+    ['light', 'dark'].forEach(function (t) {
+      var p = document.createElement('div'); p.setAttribute('data-theme', t);
+      p.style.display = 'none'; document.body.appendChild(p); probes[t] = p;
+    });
+    var html = '<thead><tr><th>Пара</th><th>Светлая</th><th>Тёмная</th></tr></thead><tbody>';
+    CONTRAST.forEach(function (c) {
+      html += '<tr><td>' + c[0] + '</td>';
+      ['light', 'dark'].forEach(function (t) {
+        var r = ratio(cssVar(probes[t], c[1]), cssVar(probes[t], c[2]));
+        html += '<td class="' + (r >= 4.5 ? 'pass' : 'fail') + '">' + r.toFixed(1).replace('.', ',') + (r >= 4.5 ? '' : ' (ниже 4,5)') + '</td>';
+      });
+      html += '</tr>';
+    });
+    document.getElementById('contrast-table').innerHTML = html + '</tbody>';
+    Object.keys(probes).forEach(function (k) { probes[k].remove(); });
+  })();
+
+  /* ---------- 5. отступы ---------- */
+  document.getElementById('space-list').innerHTML = SPACES.map(function (s) {
+    return '<div class="space-row"><span class="mono">' + s[0] + '</span><i style="width:var(' + s[0] + ')"></i><span>' + s[1] + ' px</span></div>';
+  }).join('');
+
+  /* ---------- 6. компоненты ---------- */
+  var compGrid = document.getElementById('comp-grid');
+  ['light', 'dark'].forEach(function (t) {
+    var rows = STUDENTS.map(function (s) {
+      var st = STATUS[s[1]];
+      return '<tr><td style="padding:var(--row-pad) 12px;border-bottom:1px solid var(--border)">' + s[0] + '</td>' +
+        '<td style="padding:var(--row-pad) 12px;border-bottom:1px solid var(--border)"><span class="chip ' + s[1] + '"><svg><use href="#' + st[1] + '"/></svg>' + st[0] + '</span></td></tr>';
+    }).join('');
+    var col = document.createElement('div');
+    col.className = 'theme-col'; col.setAttribute('data-theme', t);
+    col.innerHTML = '<div class="th-head">' + themeName(t) + '</div><div class="comp-stack">' +
+      '<div class="row"><button class="btn btn-primary"><svg><use href="#i-save"/></svg>Сохранить</button><button class="btn btn-ghost">Отмена</button></div>' +
+      '<div class="card"><h4>ИС-21</h4><div class="s">Группа, набор 2021</div><div class="kpis"><div class="kpi"><b>24</b><span>студента</span></div><div class="kpi"><b>91%</b><span>посещаемость</span></div></div></div>' +
+      '<div><div class="lbl" style="margin-bottom:8px">Отметка посещаемости</div>' +
+      '<div class="card" style="padding:0;overflow:hidden"><table style="width:100%;border-collapse:collapse;font-size:var(--fs-body)"><tbody>' + rows + '</tbody></table></div></div>' +
+      '</div>';
+    compGrid.appendChild(col);
+  });
+
+  /* ---------- 7. иконки ---------- */
+  document.getElementById('icon-grid').innerHTML = ICONS.map(function (i) {
+    return '<div class="icon-cell"><svg><use href="#' + i[0] + '"/></svg><div class="n">' + i[1] + '</div><div class="id">' + i[0] + '</div></div>';
+  }).join('');
+
+  /* ---------- 8. дамп CSS ---------- */
+  (function () {
+    var names = COLORS.map(function (c) { return c[1]; }).concat(['--shadow']);
+    function block(sel, el) {
+      return sel + ' {\n' + names.map(function (n) { return '  ' + n + ': ' + cssVar(el, n) + ';'; }).join('\n') + '\n}';
+    }
+    var l = document.createElement('div'); l.setAttribute('data-theme', 'light');
+    var d = document.createElement('div'); d.setAttribute('data-theme', 'dark');
+    [l, d].forEach(function (e) { e.style.display = 'none'; document.body.appendChild(e); });
+    var statics = [
+      '--font', '--font-mono', '--fs-caption', '--fs-small', '--fs-body', '--fs-lead', '--fs-h3', '--fs-h2', '--fs-h1',
+      '--r-sm', '--r', '--r-lg', '--r-pill', '--sp-1', '--sp-2', '--sp-3', '--sp-4', '--sp-5', '--sp-6', '--sp-8', '--sp-10', '--sp-12', '--row-pad'
+    ];
+    var root = ':root {\n' + statics.map(function (n) { return '  ' + n + ': ' + cssVar(document.documentElement, n) + ';'; }).join('\n') + '\n}';
+    document.getElementById('css-dump').textContent =
+      root + '\n\n' + block(':root,\n[data-theme="light"]', l) + '\n\n' + block('[data-theme="dark"]', d);
+    l.remove(); d.remove();
+  })();
+</script>
+</body>
+</html>

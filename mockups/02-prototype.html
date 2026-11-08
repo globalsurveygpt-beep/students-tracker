@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Прототип — учёт посещаемости</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Токены скопированы из !DESIGN_TOKENS.html (раздел 8). Новых значений здесь нет. */
+  :root{
+    --font:'Manrope',system-ui,-apple-system,"Segoe UI",sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,Consolas,monospace;
+    --fs-caption:12px; --fs-small:13px; --fs-body:14px; --fs-lead:16px;
+    --fs-h3:20px; --fs-h2:24px; --fs-h1:32px;
+    --r-sm:8px; --r:14px; --r-lg:20px; --r-pill:999px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px;
+    --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px;
+    --row-pad:11px;
+  }
+  :root,[data-theme="light"]{
+    --bg:#F3F4F6; --card:#FFFFFF; --text:#1C1E22; --muted:#656A73;
+    --border:#E0E3E8; --hover:#EAECF0;
+    --accent:#6D4FD1; --on-accent:#FFFFFF;
+    --ok:#1F7A3F;   --ok-bg:#E2F2E7;
+    --bad:#B3261E;  --bad-bg:#FBE7E5;
+    --info:#0B6B74; --info-bg:#DDF1F2;
+    --warn:#935C00; --warn-bg:#FBF0D4;
+    --shadow:0 1px 3px rgba(20,20,20,.07);
+  }
+  [data-theme="dark"]{
+    --bg:#16181B; --card:#1F2226; --text:#E6E2DC; --muted:#9A9CA0;
+    --border:#2E3338; --hover:#272B30;
+    --accent:#A78BFA; --on-accent:#150C2E;
+    --ok:#7DD39A;   --ok-bg:#1E3A2A;
+    --bad:#F28B82;  --bad-bg:#4A2624;
+    --info:#6FD3E0; --info-bg:#1B3F46;
+    --warn:#E6C15A; --warn-bg:#463A16;
+    --shadow:none;
+  }
+
+  /* ================= база ================= */
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:var(--fs-body);line-height:1.5;min-height:100vh;min-height:100dvh;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+  svg.i{width:20px;height:20px;flex:none}
+  svg.i.sm{width:16px;height:16px}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .muted{color:var(--muted)}
+  .mono{font-family:var(--font-mono)}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+  /* ================= кнопки и поля ================= */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);font-weight:700;font-size:var(--fs-body);padding:10px 16px;min-height:42px;border-radius:var(--r);border:1px solid transparent;cursor:pointer;white-space:nowrap;transition:filter .15s,background .15s}
+  .btn svg{width:18px;height:18px}
+  .btn-primary{background:var(--accent);color:var(--on-accent)}
+  .btn-primary:hover{filter:brightness(1.08)}
+  .btn-ghost{background:var(--card);color:var(--text);border-color:var(--border)}
+  .btn-ghost:hover{background:var(--hover)}
+  .btn-danger{background:var(--bad);color:#fff}
+  [data-theme="dark"] .btn-danger{color:#2A0E0B}
+  .btn-danger:hover{filter:brightness(1.08)}
+  .btn-sm{min-height:34px;padding:6px 12px;font-size:var(--fs-small);border-radius:var(--r-sm)}
+  .btn[disabled]{opacity:.55;cursor:not-allowed;filter:none}
+  .icon-btn{width:36px;height:36px;display:inline-grid;place-items:center;border-radius:var(--r-sm);border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer}
+  .icon-btn:hover{background:var(--hover);color:var(--text)}
+  .icon-btn.danger:hover{color:var(--bad);background:var(--bad-bg)}
+  .icon-btn svg{width:18px;height:18px}
+
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field > label,.field > .lbl{font-size:var(--fs-small);font-weight:600}
+  .field .help{font-size:var(--fs-caption);color:var(--muted)}
+  .field .err{font-size:var(--fs-caption);color:var(--bad);font-weight:600;display:none}
+  .field.invalid .err{display:block}
+  .field.invalid .ctl{border-color:var(--bad)}
+  .ctl{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;min-height:42px}
+  .ctl:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+  select.ctl{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:36px}
+  .search{position:relative;min-width:0}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);width:18px;height:18px;pointer-events:none}
+  .search .ctl{padding-left:38px}
+  .check{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-small);font-weight:600;cursor:pointer}
+  .check input{width:18px;height:18px;accent-color:var(--accent)}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4)}
+  .form-grid .full{grid-column:1/-1}
+
+  /* ================= бейджи ================= */
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:4px 10px 4px 8px;border-radius:var(--r-pill);white-space:nowrap}
+  .chip svg{width:14px;height:14px}
+  .chip.present{color:var(--ok);background:var(--ok-bg)}
+  .chip.absent{color:var(--bad);background:var(--bad-bg)}
+  .chip.excused{color:var(--info);background:var(--info-bg)}
+  .chip.late{color:var(--warn);background:var(--warn-bg)}
+  .chip.neutral{color:var(--muted);background:var(--hover)}
+  .chip.accent{color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+
+  /* ================= вход ================= */
+  .login{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}
+  .l-aside{padding:var(--sp-12);display:flex;flex-direction:column;justify-content:space-between;gap:var(--sp-8);background:color-mix(in srgb,var(--accent) 11%,var(--bg));border-right:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:var(--sp-3);min-width:0}
+  .brand-mark{width:42px;height:42px;border-radius:var(--r);background:var(--accent);color:var(--on-accent);display:grid;place-items:center;flex:none}
+  .brand-mark svg{width:24px;height:24px}
+  .brand-name{font-size:var(--fs-lead);font-weight:800;letter-spacing:-.2px;white-space:nowrap}
+  .l-main h1{font-size:var(--fs-h1);font-weight:800;letter-spacing:-.6px;line-height:1.15;max-width:460px}
+  .l-main p{font-size:var(--fs-lead);color:var(--muted);margin-top:var(--sp-4);max-width:440px}
+  .facts{list-style:none;margin-top:var(--sp-8);display:flex;flex-direction:column;gap:var(--sp-4)}
+  .facts li{display:flex;gap:var(--sp-3);align-items:flex-start}
+  .fact-ic{width:40px;height:40px;border-radius:var(--r);background:var(--card);border:1px solid var(--border);color:var(--accent);display:grid;place-items:center;flex:none}
+  .facts b{display:block}
+  .facts .t{font-size:var(--fs-small);color:var(--muted)}
+  .l-foot{font-size:var(--fs-caption);color:var(--muted)}
+  .l-right{position:relative;display:flex;align-items:center;justify-content:center;padding:var(--sp-12) var(--sp-6)}
+  .l-card{width:100%;max-width:420px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--sp-8);box-shadow:var(--shadow)}
+  .l-card h2{font-size:var(--fs-h2);font-weight:800;letter-spacing:-.3px}
+  .l-card .sub{font-size:var(--fs-small);color:var(--muted);margin-top:var(--sp-2)}
+  .l-form{display:flex;flex-direction:column;gap:var(--sp-4);margin-top:var(--sp-5)}
+  .with-ic{position:relative}
+  .with-ic > svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);width:20px;height:20px;pointer-events:none}
+  .with-ic .ctl{padding-left:44px;padding-right:44px;min-height:46px}
+  .with-ic .icon-btn{position:absolute;right:5px;top:50%;transform:translateY(-50%)}
+  .alert{display:flex;gap:var(--sp-3);align-items:flex-start;padding:var(--sp-3) var(--sp-4);border-radius:var(--r);font-size:var(--fs-small);font-weight:600}
+  .alert svg{width:18px;height:18px;margin-top:1px}
+  .alert.err{background:var(--bad-bg);color:var(--bad)}
+  .alert.ok{background:var(--ok-bg);color:var(--ok)}
+  .alert.info{background:var(--info-bg);color:var(--info)}
+  .alert.warn{background:var(--warn-bg);color:var(--warn)}
+  .hint{display:flex;gap:var(--sp-2);margin-top:var(--sp-5);font-size:var(--fs-small);color:var(--muted)}
+  .hint svg{width:18px;height:18px;margin-top:1px}
+  .demo{margin-top:var(--sp-5);border-top:1px dashed var(--border);padding-top:var(--sp-4)}
+  .demo-title{font-size:var(--fs-small);font-weight:700;color:var(--muted);margin-bottom:var(--sp-3)}
+  .demo-row{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);width:100%;padding:8px 12px;margin-bottom:var(--sp-2);border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg);cursor:pointer;text-align:left;font-size:var(--fs-small)}
+  .demo-row:hover{background:var(--hover)}
+  .demo-row code{font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+  .theme-fab{position:absolute;top:var(--sp-5);right:var(--sp-5)}
+  .theme-btn{width:42px;height:42px;border-radius:var(--r);border:1px solid var(--border);background:var(--card);color:var(--text);display:grid;place-items:center;cursor:pointer}
+  .theme-btn:hover{background:var(--hover)}
+  svg.i-moon{display:none}
+  [data-theme="dark"] svg.i-sun{display:none}
+  [data-theme="dark"] svg.i-moon{display:block}
+
+  /* ================= оболочка приложения ================= */
+  .app{display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100vh;min-height:100dvh}
+  .side{position:sticky;top:0;height:100vh;height:100dvh;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:var(--sp-5) var(--sp-4);gap:var(--sp-6);z-index:30}
+  .side .brand{padding:0 var(--sp-2)}
+  .nav{display:flex;flex-direction:column;gap:2px;flex:1;overflow-y:auto}
+  .nav-sec{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:var(--sp-3) var(--sp-3) var(--sp-2)}
+  .nav a{display:flex;align-items:center;gap:var(--sp-3);padding:10px 12px;border-radius:var(--r);color:var(--muted);text-decoration:none;font-weight:600;cursor:pointer}
+  .nav a:hover{background:var(--hover);color:var(--text)}
+  .nav a.active{background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent);font-weight:700}
+  .side-foot{display:flex;flex-direction:column;gap:var(--sp-3);border-top:1px solid var(--border);padding-top:var(--sp-4)}
+  .me{display:flex;align-items:center;gap:var(--sp-3);padding:0 var(--sp-2);min-width:0}
+  .avatar{width:36px;height:36px;border-radius:50%;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+  .me-text{min-width:0}
+  .me-name{font-weight:700;font-size:var(--fs-small);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .me-role{font-size:var(--fs-caption);color:var(--muted)}
+  .side-actions{display:flex;gap:var(--sp-2);padding:0 var(--sp-2)}
+  .side-actions .btn{flex:1}
+
+  .content{min-width:0;padding:var(--sp-8) var(--sp-8) var(--sp-12)}
+  .topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-4);flex-wrap:wrap;margin-bottom:var(--sp-6)}
+  .topbar h1{font-size:var(--fs-h2);font-weight:800;letter-spacing:-.3px;line-height:1.2}
+  .topbar .sub{font-size:var(--fs-small);color:var(--muted);margin-top:4px}
+  .topbar-left{display:flex;align-items:flex-start;gap:var(--sp-3);min-width:0}
+  .menu-btn{display:none}
+  .actions{display:flex;gap:var(--sp-2);flex-wrap:wrap}
+  .back{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-small);font-weight:700;color:var(--muted);text-decoration:none;margin-bottom:var(--sp-3);cursor:pointer;background:none;border:0}
+  .back:hover{color:var(--accent)}
+  .overlay{display:none}
+
+  /* ================= блоки ================= */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow)}
+  .card-pad{padding:var(--sp-5)}
+  .card-head{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);flex-wrap:wrap;padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--border)}
+  .card-head h2,.card-head h3{font-size:var(--fs-lead);font-weight:800}
+  .stack{display:flex;flex-direction:column;gap:var(--sp-5)}
+  .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-4)}
+  .kpi{padding:var(--sp-4) var(--sp-5)}
+  .kpi .v{font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1.2}
+  .kpi .v.accent{color:var(--accent)}
+  .kpi .l{font-size:var(--fs-small);color:var(--muted)}
+  .toolbar{display:flex;gap:var(--sp-3);flex-wrap:wrap;align-items:flex-end;padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--border)}
+  .toolbar .grow{flex:1;min-width:200px}
+  .toolbar .field{min-width:160px}
+
+  .split{display:grid;grid-template-columns:300px minmax(0,1fr);gap:var(--sp-5);align-items:start}
+  .glist{list-style:none;padding:var(--sp-2)}
+  .glist button{width:100%;display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:10px 12px;border-radius:var(--r);border:0;background:transparent;cursor:pointer;text-align:left}
+  .glist button:hover{background:var(--hover)}
+  .glist button.active{background:color-mix(in srgb,var(--accent) 13%,transparent)}
+  .glist button.active .gname{color:var(--accent)}
+  .gname{font-weight:700}
+  .gmeta{font-size:var(--fs-caption);color:var(--muted)}
+
+  .tabs{display:flex;gap:var(--sp-1);background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:4px;width:max-content;max-width:100%;overflow-x:auto;margin-bottom:var(--sp-5)}
+  .tabs button{border:0;background:transparent;padding:8px 16px;border-radius:calc(var(--r) - 4px);font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap}
+  .tabs button.active{background:var(--accent);color:var(--on-accent)}
+
+  .acards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--sp-4)}
+  .acard{padding:var(--sp-4) var(--sp-5);text-align:left;cursor:pointer;border:1px solid var(--border);background:var(--card);border-radius:var(--r-lg);box-shadow:var(--shadow)}
+  .acard:hover{border-color:var(--accent)}
+  .acard.active{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+  .acard .g{font-weight:800;font-size:var(--fs-lead)}
+  .acard .s{font-size:var(--fs-small);color:var(--muted)}
+  .acard .row{display:flex;justify-content:space-between;align-items:baseline;margin-top:var(--sp-3)}
+  .acard .pct{font-size:22px;font-weight:800;color:var(--accent)}
+
+  /* таблицы */
+  .tbl-wrap{overflow-x:auto}
+  table.t{width:100%;border-collapse:collapse}
+  table.t th{text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:10px var(--sp-4);border-bottom:1px solid var(--border);white-space:nowrap}
+  table.t td{padding:var(--row-pad) var(--sp-4);border-bottom:1px solid var(--border);vertical-align:middle}
+  table.t tr:last-child td{border-bottom:none}
+  table.t tbody tr.click{cursor:pointer}
+  table.t tbody tr.click:hover td{background:var(--hover)}
+  table.t td.num,table.t th.num{text-align:right;white-space:nowrap}
+  table.t td.act{text-align:right;white-space:nowrap;width:1%}
+  .cell-main{font-weight:700}
+  .cell-sub{font-size:var(--fs-caption);color:var(--muted)}
+  .bar{display:flex;align-items:center;gap:var(--sp-2);justify-content:flex-end}
+  .bar-track{width:90px;height:6px;border-radius:99px;background:var(--hover);overflow:hidden}
+  .bar-fill{height:100%;border-radius:99px;background:var(--accent)}
+  .bar b{min-width:42px;text-align:right}
+  .empty{padding:var(--sp-10) var(--sp-5);text-align:center;color:var(--muted)}
+  .empty svg{width:36px;height:36px;margin-bottom:var(--sp-2);color:var(--muted)}
+  .empty b{display:block;color:var(--text);margin-bottom:4px}
+
+  /* отметка посещаемости */
+  .mark-head{display:flex;justify-content:space-between;gap:var(--sp-4);flex-wrap:wrap;align-items:center;padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--border)}
+  .counters{display:flex;gap:var(--sp-2);flex-wrap:wrap}
+  .mrow{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:var(--sp-3);align-items:center;padding:10px var(--sp-5);border-bottom:1px solid var(--border)}
+  .mrow:last-child{border-bottom:0}
+  .mrow .n{color:var(--muted);font-size:var(--fs-small);text-align:right}
+  .mrow .nm{font-weight:700;min-width:0}
+  .seg{display:inline-flex;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:3px}
+  .seg button{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;padding:6px 10px;border-radius:calc(var(--r) - 4px);font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap}
+  .seg button svg{width:14px;height:14px}
+  .seg button:hover{background:var(--hover)}
+  .seg button.on.present{background:var(--ok-bg);color:var(--ok)}
+  .seg button.on.absent{background:var(--bad-bg);color:var(--bad)}
+  .seg button.on.excused{background:var(--info-bg);color:var(--info)}
+  .seg button.on.late{background:var(--warn-bg);color:var(--warn)}
+  .sticky-save{position:sticky;bottom:0;display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);flex-wrap:wrap;padding:var(--sp-4) var(--sp-5);background:var(--card);border-top:1px solid var(--border);border-radius:0 0 var(--r-lg) var(--r-lg)}
+
+  /* кабинет студента */
+  .hello{padding:var(--sp-6);display:flex;justify-content:space-between;gap:var(--sp-5);flex-wrap:wrap;align-items:center;background:color-mix(in srgb,var(--accent) 9%,var(--card))}
+  .hello h2{font-size:var(--fs-h3);font-weight:800}
+  .big-pct{font-size:44px;font-weight:800;color:var(--accent);letter-spacing:-1px;line-height:1}
+  .subj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:var(--sp-4)}
+  .subj{padding:var(--sp-4) var(--sp-5)}
+  .subj .h{display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp-3)}
+  .subj .nm{font-weight:800}
+  .subj .pc{font-size:22px;font-weight:800;color:var(--accent)}
+  .subj .bar-track{width:100%;margin:var(--sp-3) 0}
+  .subj .cnt{display:flex;gap:var(--sp-3);flex-wrap:wrap;font-size:var(--fs-caption);color:var(--muted)}
+
+  /* модальные окна */
+  .modal-bg{position:fixed;inset:0;background:rgba(10,10,14,.48);display:flex;align-items:center;justify-content:center;padding:var(--sp-4);z-index:100}
+  .modal{width:100%;max-width:520px;max-height:calc(100dvh - 32px);overflow-y:auto;background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+  .modal.wide{max-width:760px}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);padding:var(--sp-5) var(--sp-5) 0}
+  .modal-head h3{font-size:var(--fs-h3);font-weight:800}
+  .modal-body{padding:var(--sp-5);display:flex;flex-direction:column;gap:var(--sp-4)}
+  .modal-foot{display:flex;justify-content:flex-end;gap:var(--sp-2);padding:0 var(--sp-5) var(--sp-5);flex-wrap:wrap}
+  .secret{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4);background:var(--bg);border:1px dashed var(--border);border-radius:var(--r);font-family:var(--font-mono);font-size:var(--fs-lead);font-weight:700}
+
+  /* уведомления */
+  .toasts{position:fixed;right:var(--sp-5);bottom:var(--sp-5);display:flex;flex-direction:column;gap:var(--sp-2);z-index:200}
+  .toast{display:flex;gap:var(--sp-3);align-items:center;padding:12px 16px;background:var(--text);color:var(--bg);border-radius:var(--r);font-weight:600;font-size:var(--fs-small);box-shadow:0 10px 30px rgba(0,0,0,.2);animation:tin .2s ease-out}
+  .toast svg{width:18px;height:18px}
+  @keyframes tin{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+  @media (prefers-reduced-motion:reduce){.toast{animation:none}}
+
+  /* ================= адаптивность (desktop-first) ================= */
+  @media (max-width:1100px){
+    .app{grid-template-columns:76px minmax(0,1fr)}
+    .side{padding:var(--sp-5) var(--sp-3);align-items:center}
+    .side .brand-name,.nav a span,.nav-sec,.me-text,.side-actions .btn span{display:none}
+    .nav a{justify-content:center;padding:12px}
+    .me{padding:0}
+    .side-actions{flex-direction:column;padding:0}
+    .side-actions .btn{padding:8px;min-height:38px}
+    .content{padding:var(--sp-6)}
+    .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .split{grid-template-columns:240px minmax(0,1fr)}
+  }
+  @media (max-width:900px){
+    .login{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+    .l-aside{padding:var(--sp-4) var(--sp-5);flex-direction:row;align-items:center;border-right:0;border-bottom:1px solid var(--border)}
+    .l-main,.l-foot{display:none}
+    .l-right{padding:var(--sp-6) var(--sp-4);align-items:flex-start}
+    .theme-fab{position:fixed;top:var(--sp-3);right:var(--sp-4);z-index:5}
+
+    .app{grid-template-columns:1fr}
+    .side{position:fixed;left:0;top:0;width:272px;transform:translateX(-100%);transition:transform .2s;align-items:stretch;padding:var(--sp-5) var(--sp-4)}
+    .app.nav-open .side{transform:none}
+    .side .brand-name,.nav a span,.nav-sec,.me-text,.side-actions .btn span{display:revert}
+    .nav a{justify-content:flex-start;padding:10px 12px}
+    .me{padding:0 var(--sp-2)}
+    .side-actions{flex-direction:row;padding:0 var(--sp-2)}
+    .app.nav-open .overlay{display:block;position:fixed;inset:0;background:rgba(10,10,14,.4);z-index:20}
+    .menu-btn{display:inline-grid;border:1px solid var(--border);background:var(--card)}
+    .split{grid-template-columns:1fr}
+    .content{padding:var(--sp-5) var(--sp-4) var(--sp-10)}
+  }
+  @media (max-width:768px){
+    table.t.resp thead{display:none}
+    table.t.resp,table.t.resp tbody,table.t.resp tr,table.t.resp td{display:block;width:100%}
+    table.t.resp tr{padding:var(--sp-3) var(--sp-4);border-bottom:1px solid var(--border)}
+    table.t.resp tr:last-child{border-bottom:0}
+    table.t.resp td{border:0;padding:4px 0;display:flex;justify-content:space-between;align-items:center;gap:var(--sp-3);text-align:right}
+    table.t.resp td::before{content:attr(data-label);font-size:var(--fs-caption);font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;text-align:left}
+    table.t.resp td.act{width:100%;justify-content:flex-end}
+    table.t.resp td.act::before{content:none}
+    table.t.resp td[data-label=""]::before{content:none}
+    .form-grid{grid-template-columns:1fr}
+    .mrow{grid-template-columns:minmax(0,1fr);gap:var(--sp-2)}
+    .mrow .n{display:none}
+    .seg{width:100%;display:grid;grid-template-columns:repeat(4,1fr)}
+    .seg button{justify-content:center;padding:8px 4px}
+    .seg button span{display:none}
+    .toasts{left:var(--sp-4);right:var(--sp-4)}
+    .sticky-save #dirtyNote{display:none}
+    .sticky-save .actions{width:100%;flex-wrap:nowrap}
+    .sticky-save .actions .btn{flex:1}
+    .mark-head .actions{width:100%}
+    .mark-head .actions .btn{flex:1}
+  }
+  @media (max-width:480px){
+    .kpis{grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+    .kpi{padding:var(--sp-3) var(--sp-4)}
+    .kpi .v{font-size:22px}
+    .l-card{padding:var(--sp-5)}
+    .topbar h1{font-size:var(--fs-h3)}
+    .big-pct{font-size:36px}
+    .demo-row{flex-direction:column;align-items:flex-start;gap:2px}
+    .hello > div:last-child{text-align:left!important}
+  }
+</style>
+</head>
+<body>
+
+<!-- Иконки: viewBox 24x24, линия 2 px, скруглённые концы, currentColor -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-present" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-absent" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-excused" viewBox="0 0 24 24"><path d="M7 3.5h7l4 4V20a.5.5 0 01-.5.5h-10.5a.5.5 0 01-.5-.5V4a.5.5 0 01.5-.5z M14 3.5V8h4 M9.5 13h5 M9.5 16.5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-late" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z M8 4v5h7V4 M8 20v-6h8v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-brand" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M8 3v4M16 3v4M9 15l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5v5M12 16.5h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 5H6a1 1 0 00-1 1v14a1 1 0 001 1h12a1 1 0 001-1V6a1 1 0 00-1-1h-1M9 14l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16M8 16v-4M12 16V8M16 16v-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.5 20c0-3.6 2.9-5.5 6.5-5.5s6.5 1.9 6.5 5.5M16 4.8a3.5 3.5 0 010 6.4M18 14.8c2.2.6 3.5 2.4 3.5 5.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 015.5 4H19v14H5.5A1.5 1.5 0 004 19.5zM4 19.5A1.5 1.5 0 005.5 21H19M8 8h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5.5c0 4.3-3 8-7 9.5-4-1.5-7-5.2-7-9.5V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M11 12l9-9M16 7l3 3M18 5l2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 012 2v12a2 2 0 01-2 2h-3M10 16l-4-4 4-4M6 12h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v8M7 6.3a7 7 0 1010 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</svg>
+
+<div id="root"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =====================================================================
+     ДЕМО-ДАННЫЕ. В макете всё хранится в памяти страницы и сбрасывается
+     при перезагрузке. Структура повторяет таблицы из docs/SPEC.md.
+     ===================================================================== */
+  var TODAY = '2026-11-08';
+  var STATUSES = ['present', 'absent', 'excused', 'late'];
+  var ST = {
+    present: { label: 'Был', icon: 'i-present' },
+    absent:  { label: 'Не был', icon: 'i-absent' },
+    excused: { label: 'Уважительная', icon: 'i-excused' },
+    late:    { label: 'Опоздал', icon: 'i-late' }
+  };
+  var ROLE = { admin: 'Администратор', teacher: 'Преподаватель', student: 'Студент' };
+
+  function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  var DB = (function seed() {
+    var r = rng(20261108);
+    var groups = [
+      { id: 1, name: 'ИС-21', start_year: 2021 },
+      { id: 2, name: 'ИС-22', start_year: 2022 },
+      { id: 3, name: 'ПЭ-23', start_year: 2023 }
+    ];
+    var subjects = [
+      { id: 1, name: 'Базы данных' },
+      { id: 2, name: 'Веб-программирование' },
+      { id: 3, name: 'Экономика организации' },
+      { id: 4, name: 'Математика' },
+      { id: 5, name: 'Английский язык' }
+    ];
+    var users = [
+      { id: 1, login: 'admin',    password: 'admin12345',   role: 'admin',   full_name: 'Хасанова Дилноза Рустамовна', is_active: true },
+      { id: 2, login: 'teacher',  password: 'teacher12345', role: 'teacher', full_name: 'Назаров Бахтиёр Каримович',   is_active: true },
+      { id: 3, login: 'yusupova', password: 'pass12345',    role: 'teacher', full_name: 'Юсупова Малика Олимовна',     is_active: true },
+      { id: 4, login: 'sharipov', password: 'pass12345',    role: 'teacher', full_name: 'Шарипов Рустам Ахмадович',    is_active: true },
+      { id: 5, login: 'student',  password: 'student12345', role: 'student', full_name: 'Азизов Фарход Шерович',       is_active: true },
+      { id: 6, login: 'karimova', password: 'pass12345',    role: 'student', full_name: 'Каримова Нодира Алиевна',     is_active: true }
+    ];
+    var names = {
+      1: ['Азизов Фарход Шерович', 'Каримова Нодира Алиевна', 'Рахимов Далер Тоирович', 'Саидова Мехрубон Исмоиловна', 'Холиқов Умар Ильхомович', 'Мирзоев Сухроб Анварович', 'Иванова Анна Сергеевна', 'Давлатов Шахзод Бахромович', 'Назарова Зарина Фаридуновна'],
+      2: ['Олимов Фирдавс Рустамович', 'Петров Дмитрий Андреевич', 'Шарипова Мадина Комиловна', 'Хайдаров Исмоил Наимович', 'Юнусова Гулноза Шавкатовна', 'Раджабов Амир Джамшедович', 'Курбонова Ситора Олимовна', 'Ахмедов Рустам Бахтиёрович'],
+      3: ['Собиров Комрон Фарходович', 'Сидорова Елена Викторовна', 'Гафуров Бехруз Абдуллоевич', 'Ниёзова Парвина Хуршедовна', 'Тошматов Аброр Самадович', 'Латипова Фарзона Икромовна', 'Бобоев Мухаммад Зафарович']
+    };
+    var students = [], sid = 1;
+    Object.keys(names).forEach(function (g) {
+      names[g].forEach(function (n) {
+        var uid = null;
+        if (n === 'Азизов Фарход Шерович') uid = 5;
+        if (n === 'Каримова Нодира Алиевна') uid = 6;
+        students.push({ id: sid++, full_name: n, group_id: Number(g), user_id: uid });
+      });
+    });
+    var assignments = [
+      { id: 1, teacher_id: 2, group_id: 1, subject_id: 1 },
+      { id: 2, teacher_id: 2, group_id: 1, subject_id: 2 },
+      { id: 3, teacher_id: 2, group_id: 2, subject_id: 1 },
+      { id: 4, teacher_id: 3, group_id: 1, subject_id: 3 },
+      { id: 5, teacher_id: 3, group_id: 3, subject_id: 3 },
+      { id: 6, teacher_id: 4, group_id: 2, subject_id: 4 },
+      { id: 7, teacher_id: 4, group_id: 3, subject_id: 5 }
+    ];
+    var days = ['2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30', '2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05', '2026-11-06'];
+    var topics = {
+      1: ['Реляционная модель', 'Нормализация', 'SQL: SELECT', 'Соединения таблиц', 'Индексы'],
+      2: ['HTML-разметка', 'CSS Grid', 'JavaScript: DOM', 'Fetch API', 'Формы и валидация'],
+      3: ['Издержки предприятия', 'Себестоимость', 'Прибыль и рентабельность', 'Оборотные средства'],
+      4: ['Пределы', 'Производные', 'Интегралы', 'Матрицы'],
+      5: ['Present Simple', 'Business vocabulary', 'Writing emails', 'Past Simple']
+    };
+    var lessons = [], lid = 1, busy = {};
+    assignments.forEach(function (a, ai) {
+      var picks = [ai % 5, (ai % 5) + 2, ((ai % 5) + 5) % 10, ((ai % 5) + 7) % 10];
+      if (a.id === 1) picks = [0, 3, 5, 9];
+      picks.sort(function (x, y) { return x - y; });
+      picks.forEach(function (d, k) {
+        var date = days[d], pair = 1 + (ai % 3);
+        while (busy[a.group_id + '|' + date + '|' + pair]) pair++;
+        busy[a.group_id + '|' + date + '|' + pair] = true;
+        var tp = topics[a.subject_id];
+        lessons.push({ id: lid++, lesson_date: date, pair_number: pair, group_id: a.group_id, subject_id: a.subject_id, teacher_id: a.teacher_id, topic: tp[k % tp.length] });
+      });
+    });
+    var attendance = [], aid = 1;
+    lessons.forEach(function (l) {
+      if (l.teacher_id === 2 && l.lesson_date === '2026-11-06') return; /* последнее занятие оставлено неотмеченным для демонстрации */
+      students.filter(function (s) { return s.group_id === l.group_id; }).forEach(function (s) {
+        var x = r(), st = x < 0.8 ? 'present' : x < 0.88 ? 'absent' : x < 0.95 ? 'late' : 'excused';
+        attendance.push({ id: aid++, lesson_id: l.id, student_id: s.id, status: st, note: null });
+      });
+    });
+    return { groups: groups, subjects: subjects, users: users, students: students, assignments: assignments, lessons: lessons, attendance: attendance,
+             seq: { groups: 4, subjects: 6, users: 7, students: sid, assignments: 8, lessons: lid, attendance: aid } };
+  })();
+
+  /* ================= вспомогательные ================= */
+  function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function ic(id, cls) { return '<svg class="i' + (cls ? ' ' + cls : '') + '" aria-hidden="true"><use href="#' + id + '"/></svg>'; }
+  function byId(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
+  function nextId(t) { return DB.seq[t]++; }
+  var WD = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+  function fmtDate(d) { var p = d.split('-'); return p[2] + '.' + p[1] + '.' + p[0]; }
+  function wd(d) { var p = d.split('-'); return WD[new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])).getDay()]; }
+  function initials(n) { var p = n.split(' '); return (p[0] ? p[0][0] : '') + (p[1] ? p[1][0] : ''); }
+  function short(n) { var p = n.split(' '); return p[0] + (p[1] ? ' ' + p[1][0] + '.' : '') + (p[2] ? ' ' + p[2][0] + '.' : ''); }
+  function groupName(id) { var g = byId(DB.groups, id); return g ? g.name : '—'; }
+  function subjName(id) { var s = byId(DB.subjects, id); return s ? s.name : '—'; }
+  function userName(id) { var u = byId(DB.users, id); return u ? u.full_name : '—'; }
+  function chip(st) { return '<span class="chip ' + st + '">' + ic(ST[st].icon) + ST[st].label + '</span>'; }
+  function genPassword() { var a = 'abcdefghjkmnpqrstuvwxyz23456789', s = ''; for (var i = 0; i < 10; i++) s += a[Math.floor(Math.random() * a.length)]; return s; }
+  function translit(n) {
+    var m = { а: 'a', б: 'b', в: 'v', г: 'g', ғ: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z', и: 'i', ӣ: 'i', й: 'y', к: 'k', қ: 'q', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ӯ: 'u', ф: 'f', х: 'kh', ҳ: 'h', ц: 'ts', ч: 'ch', ҷ: 'j', ш: 'sh', щ: 'sh', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya' };
+    return (n.split(' ')[0] || '').toLowerCase().split('').map(function (c) { return m[c] != null ? m[c] : (/[a-z0-9]/.test(c) ? c : ''); }).join('');
+  }
+
+  /* статистика: процент = (был + опоздал) / (все отметки − уважительные) */
+  function calc(records) {
+    var c = { present: 0, absent: 0, excused: 0, late: 0, total: records.length };
+    records.forEach(function (a) { c[a.status]++; });
+    var den = c.total - c.excused;
+    c.pct = den > 0 ? Math.round((c.present + c.late) / den * 100) : null;
+    return c;
+  }
+  function pctText(p) { return p == null ? '—' : p + '%'; }
+  function bar(p) { return '<div class="bar"><div class="bar-track"><div class="bar-fill" style="width:' + (p || 0) + '%"></div></div><b>' + pctText(p) + '</b></div>'; }
+  function attFor(lessonIds, studentIds) {
+    var L = {}, S = null;
+    lessonIds.forEach(function (i) { L[i] = 1; });
+    if (studentIds) { S = {}; studentIds.forEach(function (i) { S[i] = 1; }); }
+    return DB.attendance.filter(function (a) { return L[a.lesson_id] && (!S || S[a.student_id]); });
+  }
+
+  /* ================= состояние ================= */
+  var state = { user: null, groupId: 1, q: '', usersTab: 'users', lessonFilter: 'all', cabSubject: 'all', rep: null, dirty: false, navOpen: false };
+
+  /* ================= тема ================= */
+  var THEME_KEY = 'ds-theme';
+  function readSaved() { try { return localStorage.getItem(THEME_KEY); } catch (e) { return null; } }
+  function saveTheme(t) { try { localStorage.setItem(THEME_KEY, t); } catch (e) {} }
+  function systemTheme() { return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+  function applyTheme(t) { document.documentElement.setAttribute('data-theme', t); }
+  function toggleTheme() { var n = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; applyTheme(n); saveTheme(n); }
+  applyTheme(readSaved() || systemTheme());
+  function themeBtn() { return '<button type="button" class="theme-btn" data-act="theme" aria-label="Переключить тему">' + ic('i-sun', 'i-sun') + ic('i-moon', 'i-moon') + '</button>'; }
+
+  /* ================= уведомления и окна ================= */
+  function toast(msg, icon) {
+    var el = document.createElement('div');
+    el.className = 'toast';
+    el.innerHTML = ic(icon || 'i-check') + '<span>' + esc(msg) + '</span>';
+    document.getElementById('toasts').appendChild(el);
+    setTimeout(function () { el.remove(); }, 2600);
+  }
+
+  function closeModal() { var m = document.querySelector('.modal-bg'); if (m) m.remove(); document.removeEventListener('keydown', escClose); }
+  function escClose(e) { if (e.key === 'Escape') closeModal(); }
+  /* opts: title, body, submit, danger, wide, onSubmit(form) -> true | 'текст ошибки', onOpen(el) */
+  function modal(opts) {
+    closeModal();
+    var bg = document.createElement('div');
+    bg.className = 'modal-bg';
+    bg.innerHTML = '<div class="modal' + (opts.wide ? ' wide' : '') + '" role="dialog" aria-modal="true" aria-label="' + esc(opts.title) + '">' +
+      '<form novalidate><div class="modal-head"><h3>' + esc(opts.title) + '</h3><button type="button" class="icon-btn" data-close aria-label="Закрыть">' + ic('i-x') + '</button></div>' +
+      '<div class="modal-body"><div class="alert err" data-err style="display:none">' + ic('i-alert') + '<span></span></div>' + opts.body + '</div>' +
+      '<div class="modal-foot">' + (opts.submit ? '<button type="button" class="btn btn-ghost" data-close>' + (opts.cancel || 'Отмена') + '</button><button type="submit" class="btn ' + (opts.danger ? 'btn-danger' : 'btn-primary') + '">' + esc(opts.submit) + '</button>' : '<button type="button" class="btn btn-primary" data-close>Понятно</button>') + '</div></form></div>';
+    document.body.appendChild(bg);
+    var form = bg.querySelector('form');
+    bg.addEventListener('mousedown', function (e) { if (e.target === bg) closeModal(); });
+    bg.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', closeModal); });
+    document.addEventListener('keydown', escClose);
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!opts.onSubmit) { closeModal(); return; }
+      form.querySelectorAll('.field').forEach(function (f) { f.classList.remove('invalid'); });
+      var res = opts.onSubmit(form);
+      var box = form.querySelector('[data-err]');
+      if (res === true) { closeModal(); return; }
+      if (typeof res === 'string') { box.style.display = 'flex'; box.querySelector('span').textContent = res; }
+    });
+    if (opts.onOpen) opts.onOpen(bg);
+    var first = form.querySelector('input:not([type=checkbox]),select,textarea');
+    (first || form.querySelector('[type=submit]') || form.querySelector('[data-close]')).focus();
+    return bg;
+  }
+  function info(title, text) { modal({ title: title, body: '<div class="alert warn">' + ic('i-alert') + '<span>' + esc(text) + '</span></div>' }); }
+  function confirmBox(title, text, okText, onOk) {
+    modal({ title: title, body: '<p>' + esc(text) + '</p>', submit: okText, danger: true, onSubmit: function () { onOk(); return true; } });
+  }
+  function invalid(form, name, msg) {
+    var el = form.elements[name], f = el && el.closest('.field');
+    if (f) { f.classList.add('invalid'); var e = f.querySelector('.err'); if (e && msg) e.textContent = msg; }
+    return false;
+  }
+  function fld(label, name, ctl, help) {
+    return '<div class="field"><label for="f-' + name + '">' + label + '</label>' + ctl + (help ? '<div class="help">' + help + '</div>' : '') + '<div class="err">Заполните поле</div></div>';
+  }
+  function inp(name, val, type, extra) { return '<input class="ctl" id="f-' + name + '" name="' + name + '" type="' + (type || 'text') + '" value="' + esc(val == null ? '' : val) + '"' + (extra || '') + '>'; }
+  function sel(name, opts, val) {
+    return '<select class="ctl" id="f-' + name + '" name="' + name + '">' + opts.map(function (o) { return '<option value="' + esc(o[0]) + '"' + (String(o[0]) === String(val) ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select>';
+  }
+
+  /* ================= маршруты ================= */
+  var NAV = {
+    admin: [
+      ['sec', 'Справочники'],
+      ['#/groups', 'Группы и студенты', 'i-users'],
+      ['#/subjects', 'Предметы', 'i-book'],
+      ['#/users', 'Пользователи и назначения', 'i-shield'],
+      ['sec', 'Аналитика'],
+      ['#/reports', 'Отчёты', 'i-chart']
+    ],
+    teacher: [
+      ['sec', 'Работа'],
+      ['#/lessons', 'Мои занятия', 'i-calendar'],
+      ['#/reports', 'Отчёты', 'i-chart']
+    ],
+    student: [
+      ['sec', 'Кабинет'],
+      ['#/cabinet', 'Моя посещаемость', 'i-home']
+    ]
+  };
+  var HOME = { admin: '#/groups', teacher: '#/lessons', student: '#/cabinet' };
+  var ALLOWED = {
+    admin: ['groups', 'subjects', 'users', 'reports', 'password'],
+    teacher: ['lessons', 'lesson', 'reports', 'password'],
+    student: ['cabinet', 'password']
+  };
+
+  function parseRoute() {
+    var h = (location.hash || '').replace(/^#\/?/, '');
+    var parts = h.split('/');
+    return { name: parts[0] || '', id: parts[1] ? Number(parts[1]) : null };
+  }
+  function go(hash) {
+    if (state.dirty && hash !== location.hash) {
+      confirmBox('Несохранённые отметки', 'Отметки посещаемости не сохранены. Уйти со страницы без сохранения?', 'Уйти без сохранения', function () {
+        state.dirty = false; draft = null; location.hash = hash;
+      });
+      return;
+    }
+    if (location.hash === hash) render(); else location.hash = hash;
+  }
+
+  /* ================= отрисовка ================= */
+  var root = document.getElementById('root');
+  function render() {
+    closeModal();
+    if (!state.user) { root.innerHTML = loginView(); bindLogin(); return; }
+    var r = parseRoute();
+    if (r.name !== 'lesson') draft = null;
+    if (ALLOWED[state.user.role].indexOf(r.name) < 0) { location.replace(HOME[state.user.role]); return; }
+    var page = PAGES[r.name](r);
+    root.innerHTML = shell(r, page);
+    state.navOpen = false;
+    if (page.after) page.after();
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', function () { if (state.user) render(); });
+
+  function shell(r, page) {
+    var u = state.user;
+    var nav = NAV[u.role].map(function (n) {
+      if (n[0] === 'sec') return '<div class="nav-sec">' + n[1] + '</div>';
+      var active = '#/' + r.name === n[0] || (r.name === 'lesson' && n[0] === '#/lessons');
+      return '<a data-go="' + n[0] + '" class="' + (active ? 'active' : '') + '" title="' + esc(n[1]) + '">' + ic(n[2]) + '<span>' + n[1] + '</span></a>';
+    }).join('');
+    nav += '<div class="nav-sec">Профиль</div><a data-go="#/password" class="' + (r.name === 'password' ? 'active' : '') + '" title="Смена пароля">' + ic('i-key') + '<span>Смена пароля</span></a>';
+    return '<div class="app' + (state.navOpen ? ' nav-open' : '') + '" id="app">' +
+      '<aside class="side" aria-label="Меню">' +
+        '<div class="brand"><div class="brand-mark">' + ic('i-brand') + '</div><div class="brand-name">Учёт посещаемости</div></div>' +
+        '<nav class="nav">' + nav + '</nav>' +
+        '<div class="side-foot"><div class="me"><div class="avatar">' + esc(initials(u.full_name)) + '</div><div class="me-text"><div class="me-name">' + esc(short(u.full_name)) + '</div><div class="me-role">' + ROLE[u.role] + '</div></div></div>' +
+        '<div class="side-actions"><button class="btn btn-ghost btn-sm" data-act="theme" title="Переключить тему">' + ic('i-sun', 'i-sun') + ic('i-moon', 'i-moon') + '<span>Тема</span></button>' +
+        '<button class="btn btn-ghost btn-sm" data-act="logout" title="Выйти">' + ic('i-logout') + '<span>Выйти</span></button></div></div>' +
+      '</aside><div class="overlay" data-act="close-nav"></div>' +
+      '<main class="content"><div class="topbar"><div class="topbar-left"><button class="icon-btn menu-btn" data-act="open-nav" aria-label="Открыть меню">' + ic('i-menu') + '</button><div>' +
+        (page.back ? '<button class="back" data-go="' + page.back[0] + '">' + ic('i-chevron-left', 'sm') + page.back[1] + '</button>' : '') +
+        '<h1>' + page.title + '</h1>' + (page.sub ? '<div class="sub">' + page.sub + '</div>' : '') + '</div></div>' +
+        (page.actions ? '<div class="actions">' + page.actions + '</div>' : '') + '</div>' + page.html + '</main></div>';
+  }
+
+  /* делегирование кликов на всё приложение */
+  root.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-go],[data-act]');
+    if (!t) return;
+    if (t.hasAttribute('data-go')) { e.preventDefault(); go(t.getAttribute('data-go')); return; }
+    var a = t.getAttribute('data-act');
+    if (a === 'theme') toggleTheme();
+    else if (a === 'logout') {
+      var doLogout = function () { state.user = null; state.dirty = false; draft = null; state.rep = null; state.lessonFilter = 'all'; state.cabSubject = 'all'; state.q = ''; state.usersTab = 'users'; history.replaceState(null, '', location.pathname + location.search); render(); };
+      if (state.dirty) confirmBox('Несохранённые отметки', 'Отметки не сохранены. Выйти без сохранения?', 'Выйти', function () { state.dirty = false; doLogout(); });
+      else doLogout();
+    }
+    else if (a === 'open-nav') document.getElementById('app').classList.add('nav-open');
+    else if (a === 'close-nav') document.getElementById('app').classList.remove('nav-open');
+    else if (HANDLERS[a]) HANDLERS[a](t, e);
+  });
+  root.addEventListener('input', function (e) {
+    var t = e.target.closest('[data-input]');
+    if (t && HANDLERS[t.getAttribute('data-input')]) HANDLERS[t.getAttribute('data-input')](t, e);
+  });
+  root.addEventListener('change', function (e) {
+    var t = e.target.closest('[data-change]');
+    if (t && HANDLERS[t.getAttribute('data-change')]) HANDLERS[t.getAttribute('data-change')](t, e);
+  });
+  var HANDLERS = {};
+
+  /* ================= экран: вход ================= */
+  function loginView() {
+    return '<div class="login"><aside class="l-aside">' +
+      '<div class="brand"><div class="brand-mark">' + ic('i-brand') + '</div><div class="brand-name">Учёт посещаемости</div></div>' +
+      '<div class="l-main"><h1>Журнал посещаемости студентов в одном месте</h1><p>Преподаватели отмечают занятия, администратор ведёт группы и студентов, студенты видят свою посещаемость.</p>' +
+      '<ul class="facts"><li><span class="fact-ic">' + ic('i-clipboard') + '</span><div><b>Отметка за минуту</b><span class="t">Весь список группы на одном экране, статус меняется одним нажатием.</span></div></li>' +
+      '<li><span class="fact-ic">' + ic('i-chart') + '</span><div><b>Отчёты по группам</b><span class="t">Процент посещаемости по студенту, группе и предмету за любой период.</span></div></li>' +
+      '<li><span class="fact-ic">' + ic('i-user') + '</span><div><b>Личный кабинет студента</b><span class="t">Своя посещаемость с телефона, планшета или компьютера.</span></div></li></ul></div>' +
+      '<div class="l-foot">Учебный проект, 2026</div></aside>' +
+      '<div class="l-right"><div class="theme-fab">' + themeBtn() + '</div><div class="l-card">' +
+      '<h2>Вход в систему</h2><p class="sub">Введите логин и пароль, выданные администратором.</p>' +
+      '<form class="l-form" id="loginForm" novalidate>' +
+        '<div class="alert err" id="loginErr" role="alert" style="display:none">' + ic('i-alert') + '<span>Неверный логин или пароль</span></div>' +
+        '<div class="field"><label for="lg">Логин</label><div class="with-ic">' + ic('i-user') + '<input class="ctl" id="lg" name="login" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Например, teacher"></div><div class="err">Введите логин</div></div>' +
+        '<div class="field"><label for="pw">Пароль</label><div class="with-ic">' + ic('i-lock') + '<input class="ctl" id="pw" name="password" type="password" autocomplete="current-password" placeholder="Ваш пароль"><button type="button" class="icon-btn" id="pwToggle" aria-label="Показать пароль" aria-pressed="false">' + ic('i-eye') + '</button></div><div class="err">Введите пароль</div></div>' +
+        '<button class="btn btn-primary" type="submit" style="width:100%;min-height:46px">Войти</button></form>' +
+      '<div class="hint">' + ic('i-alert') + '<span>Учётную запись выдаёт администратор. Если не можете войти, обратитесь к нему.</span></div>' +
+      '<div class="demo"><div class="demo-title">Демо-доступ для макета</div>' +
+        '<button type="button" class="demo-row" data-l="admin" data-p="admin12345"><span>Администратор</span><code>admin / admin12345</code></button>' +
+        '<button type="button" class="demo-row" data-l="teacher" data-p="teacher12345"><span>Преподаватель</span><code>teacher / teacher12345</code></button>' +
+        '<button type="button" class="demo-row" data-l="student" data-p="student12345"><span>Студент</span><code>student / student12345</code></button>' +
+        '<div class="help muted" style="font-size:12px;margin-top:4px">Нажмите на строку, чтобы подставить данные. Этого блока в готовой системе не будет.</div></div>' +
+      '</div></div></div>';
+  }
+  function bindLogin() {
+    var f = document.getElementById('loginForm'), lg = f.elements.login, pw = f.elements.password, err = document.getElementById('loginErr');
+    document.getElementById('pwToggle').addEventListener('click', function () {
+      var show = pw.type === 'password'; pw.type = show ? 'text' : 'password';
+      this.setAttribute('aria-pressed', show ? 'true' : 'false'); this.setAttribute('aria-label', show ? 'Скрыть пароль' : 'Показать пароль');
+    });
+    root.querySelectorAll('.demo-row').forEach(function (b) {
+      b.addEventListener('click', function () { lg.value = b.getAttribute('data-l'); pw.value = b.getAttribute('data-p'); err.style.display = 'none'; pw.focus(); });
+    });
+    f.addEventListener('submit', function (e) {
+      e.preventDefault();
+      f.querySelectorAll('.field').forEach(function (x) { x.classList.remove('invalid'); });
+      err.style.display = 'none';
+      var l = lg.value.trim().toLowerCase(), p = pw.value, bad = false;
+      if (!l) { lg.closest('.field').classList.add('invalid'); bad = true; }
+      if (!p) { pw.closest('.field').classList.add('invalid'); bad = true; }
+      if (bad) return;
+      var u = DB.users.filter(function (x) { return x.login === l; })[0];
+      if (!u || u.password !== p || !u.is_active) { err.style.display = 'flex'; pw.select(); return; }
+      state.user = u;
+      if (location.hash === HOME[u.role]) render(); else location.hash = HOME[u.role];
+    });
+  }
+
+  /* ================= экран: группы и студенты (admin) ================= */
+  function groupStudents(gid) { return DB.students.filter(function (s) { return s.group_id === gid; }); }
+  function studentPct(sid) { return calc(DB.attendance.filter(function (a) { return a.student_id === sid; })).pct; }
+
+  function pageGroups() {
+    if (!byId(DB.groups, state.groupId)) state.groupId = DB.groups.length ? DB.groups[0].id : null;
+    var g = byId(DB.groups, state.groupId);
+    var list = DB.groups.map(function (x) {
+      var cnt = groupStudents(x.id).length;
+      var p = calc(attFor(DB.lessons.filter(function (l) { return l.group_id === x.id; }).map(function (l) { return l.id; }))).pct;
+      return '<li><button data-act="pick-group" data-id="' + x.id + '" class="' + (x.id === state.groupId && !state.q ? 'active' : '') + '"><span><span class="gname">' + esc(x.name) + '</span><br><span class="gmeta">Набор ' + x.start_year + ', ' + cnt + ' студ.</span></span><span class="chip accent">' + pctText(p) + '</span></button></li>';
+    }).join('');
+
+    var q = state.q.trim().toLowerCase();
+    var rows = q ? DB.students.filter(function (s) { return s.full_name.toLowerCase().indexOf(q) >= 0; }) : (g ? groupStudents(g.id) : []);
+    rows = rows.slice().sort(function (a, b) { return a.full_name.localeCompare(b.full_name, 'ru'); });
+
+    var body = rows.length ? rows.map(function (s) {
+      var u = s.user_id ? byId(DB.users, s.user_id) : null;
+      return '<tr><td data-label="Студент"><div class="cell-main">' + esc(s.full_name) + '</div>' + (q ? '<div class="cell-sub">' + esc(groupName(s.group_id)) + '</div>' : '') + '</td>' +
+        '<td data-label="Учётная запись">' + (u ? '<span class="mono">' + esc(u.login) + '</span>' + (u.is_active ? '' : ' <span class="chip neutral">отключена</span>') : '<span class="chip neutral">нет</span>') + '</td>' +
+        '<td data-label="Посещаемость" class="num">' + bar(studentPct(s.id)) + '</td>' +
+        '<td class="act"><button class="icon-btn" data-act="edit-student" data-id="' + s.id + '" title="Изменить" aria-label="Изменить">' + ic('i-edit') + '</button>' +
+        '<button class="icon-btn" data-act="student-account" data-id="' + s.id + '" title="Учётная запись" aria-label="Учётная запись">' + ic('i-key') + '</button>' +
+        '<button class="icon-btn danger" data-act="del-student" data-id="' + s.id + '" title="Удалить" aria-label="Удалить">' + ic('i-trash') + '</button></td></tr>';
+    }).join('') : '';
+
+    var head = q ? '<h3>Поиск: найдено ' + rows.length + '</h3>' :
+      (g ? '<div><h3>' + esc(g.name) + '</h3><div class="cell-sub">Набор ' + g.start_year + ', ' + rows.length + ' студентов</div></div>' +
+        '<div class="actions"><button class="btn btn-ghost btn-sm" data-act="edit-group" data-id="' + g.id + '">' + ic('i-edit') + 'Изменить</button><button class="btn btn-ghost btn-sm" data-act="del-group" data-id="' + g.id + '">' + ic('i-trash') + 'Удалить</button></div>' : '<h3>Нет групп</h3>');
+
+    return {
+      title: 'Группы и студенты', sub: DB.groups.length + ' группы, ' + DB.students.length + ' студентов',
+      actions: '<button class="btn btn-ghost" data-act="add-group">' + ic('i-plus') + 'Группа</button><button class="btn btn-primary" data-act="add-student">' + ic('i-plus') + 'Студент</button>',
+      html: '<div class="split"><div class="card"><div class="card-head"><h3>Группы</h3></div><ul class="glist">' + (list || '<li class="empty">Групп нет</li>') + '</ul></div>' +
+        '<div class="card"><div class="toolbar"><div class="search grow">' + ic('i-search') + '<input class="ctl" type="search" placeholder="Поиск студента по ФИО во всех группах" value="' + esc(state.q) + '" data-input="search" aria-label="Поиск студента"></div></div>' +
+        '<div class="card-head">' + head + '</div>' +
+        (rows.length ? '<div class="tbl-wrap"><table class="t resp"><thead><tr><th>Студент</th><th>Учётная запись</th><th class="num">Посещаемость</th><th></th></tr></thead><tbody>' + body + '</tbody></table></div>'
+          : '<div class="empty">' + ic('i-users') + '<b>' + (q ? 'Никого не нашли' : 'В группе пока нет студентов') + '</b>' + (q ? 'Проверьте написание ФИО' : 'Добавьте студента кнопкой «Студент»') + '</div>') + '</div></div>'
+    };
+  }
+
+  HANDLERS['pick-group'] = function (t) { state.groupId = Number(t.getAttribute('data-id')); state.q = ''; render(); };
+  var searchTimer;
+  HANDLERS.search = function (t) {
+    clearTimeout(searchTimer);
+    var v = t.value;
+    searchTimer = setTimeout(function () {
+      state.q = v; render();
+      var s = root.querySelector('[data-input="search"]'); if (s) { s.focus(); s.setSelectionRange(s.value.length, s.value.length); }
+    }, 200);
+  };
+
+  function groupForm(g) {
+    return '<div class="form-grid">' + fld('Название', 'name', inp('name', g ? g.name : '', 'text', ' placeholder="Например, ИС-24" maxlength="50"')) +
+      fld('Год набора', 'start_year', inp('start_year', g ? g.start_year : 2026, 'number', ' min="2000" max="2100"')) + '</div>';
+  }
+  function saveGroup(form, g) {
+    var name = form.elements.name.value.trim(), year = Number(form.elements.start_year.value), ok = true;
+    if (!name) ok = invalid(form, 'name');
+    if (!year || year < 2000 || year > 2100) ok = invalid(form, 'start_year', 'Год от 2000 до 2100');
+    if (!ok) return false;
+    if (DB.groups.some(function (x) { return x.name.toLowerCase() === name.toLowerCase() && (!g || x.id !== g.id); })) return 'Группа с таким названием уже есть';
+    if (g) { g.name = name; g.start_year = year; toast('Группа сохранена'); }
+    else { var id = nextId('groups'); DB.groups.push({ id: id, name: name, start_year: year }); state.groupId = id; state.q = ''; toast('Группа добавлена'); }
+    render(); return true;
+  }
+  HANDLERS['add-group'] = function () { modal({ title: 'Новая группа', body: groupForm(null), submit: 'Добавить', onSubmit: function (f) { return saveGroup(f, null); } }); };
+  HANDLERS['edit-group'] = function (t) { var g = byId(DB.groups, Number(t.getAttribute('data-id'))); modal({ title: 'Группа ' + g.name, body: groupForm(g), submit: 'Сохранить', onSubmit: function (f) { return saveGroup(f, g); } }); };
+  HANDLERS['del-group'] = function (t) {
+    var g = byId(DB.groups, Number(t.getAttribute('data-id')));
+    var s = groupStudents(g.id).length, l = DB.lessons.filter(function (x) { return x.group_id === g.id; }).length, a = DB.assignments.filter(function (x) { return x.group_id === g.id; }).length;
+    if (s || l || a) { info('Нельзя удалить группу', 'У группы ' + g.name + ' есть связанные данные: студентов ' + s + ', занятий ' + l + ', назначений ' + a + '. Сначала удалите или перенесите их.'); return; }
+    confirmBox('Удалить группу?', 'Группа ' + g.name + ' будет удалена без возможности восстановления.', 'Удалить', function () {
+      DB.groups.splice(DB.groups.indexOf(g), 1); toast('Группа удалена', 'i-trash'); render();
+    });
+  };
+
+  function studentForm(s) {
+    var gopts = DB.groups.map(function (g) { return [g.id, g.name]; });
+    var html = '<div class="form-grid">' + '<div class="full">' + fld('ФИО', 'full_name', inp('full_name', s ? s.full_name : '', 'text', ' placeholder="Фамилия Имя Отчество" maxlength="150"')) + '</div>' +
+      '<div class="full">' + fld('Группа', 'group_id', sel('group_id', gopts, s ? s.group_id : state.groupId)) + '</div></div>';
+    if (!s) html += '<label class="check"><input type="checkbox" name="make_account" checked> Сразу создать учётную запись (логин и временный пароль)</label>';
+    return html;
+  }
+  HANDLERS['add-student'] = function () {
+    modal({ title: 'Новый студент', body: studentForm(null), submit: 'Добавить', onSubmit: function (f) {
+      var n = f.elements.full_name.value.trim().replace(/\s+/g, ' ');
+      if (!n) return invalid(f, 'full_name');
+      if (n.split(' ').length < 2) return invalid(f, 'full_name', 'Укажите хотя бы фамилию и имя');
+      var s = { id: nextId('students'), full_name: n, group_id: Number(f.elements.group_id.value), user_id: null };
+      DB.students.push(s); state.groupId = s.group_id; state.q = '';
+      if (f.elements.make_account.checked) { var cred = createAccount(s); render(); showCredentials(s, cred, 'Учётная запись создана'); }
+      else { render(); toast('Студент добавлен'); }
+      return f.elements.make_account.checked ? undefined : true;
+    } });
+  };
+  HANDLERS['edit-student'] = function (t) {
+    var s = byId(DB.students, Number(t.getAttribute('data-id')));
+    modal({ title: 'Студент', body: studentForm(s), submit: 'Сохранить', onSubmit: function (f) {
+      var n = f.elements.full_name.value.trim().replace(/\s+/g, ' ');
+      if (!n) return invalid(f, 'full_name');
+      var ng = Number(f.elements.group_id.value);
+      if (ng !== s.group_id && DB.attendance.some(function (a) { return a.student_id === s.id; })) return 'Перевод в другую группу недоступен: у студента есть отметки в текущей группе. В готовой системе перевод оформляется отдельной операцией.';
+      s.full_name = n; s.group_id = ng;
+      if (s.user_id) byId(DB.users, s.user_id).full_name = n;
+      toast('Изменения сохранены'); render(); return true;
+    } });
+  };
+  HANDLERS['del-student'] = function (t) {
+    var s = byId(DB.students, Number(t.getAttribute('data-id')));
+    var n = DB.attendance.filter(function (a) { return a.student_id === s.id; }).length;
+    if (n) { info('Нельзя удалить студента', 'У студента ' + s.full_name + ' есть ' + n + ' отметок посещаемости. История не удаляется. Отключите его учётную запись, если он отчислен.'); return; }
+    confirmBox('Удалить студента?', s.full_name + (s.user_id ? ' будет удалён вместе с учётной записью.' : ' будет удалён.'), 'Удалить', function () {
+      if (s.user_id) DB.users.splice(DB.users.indexOf(byId(DB.users, s.user_id)), 1);
+      DB.students.splice(DB.students.indexOf(s), 1); toast('Студент удалён', 'i-trash'); render();
+    });
+  };
+
+  function uniqueLogin(base) { var l = base || 'user', i = 1; while (DB.users.some(function (u) { return u.login === l; })) l = (base || 'user') + (++i); return l; }
+  function createAccount(s) {
+    var u = { id: nextId('users'), login: uniqueLogin(translit(s.full_name)), password: genPassword(), role: 'student', full_name: s.full_name, is_active: true };
+    DB.users.push(u); s.user_id = u.id; return u;
+  }
+  function showCredentials(who, u, title) {
+    modal({ title: title, body: '<p>Передайте данные для входа: <b>' + esc(who.full_name) + '</b>. Пароль показывается один раз, после закрытия окна его не увидеть.</p>' +
+      '<div class="field"><div class="lbl">Логин</div><div class="secret"><span>' + esc(u.login) + '</span></div></div>' +
+      '<div class="field"><div class="lbl">Временный пароль</div><div class="secret"><span>' + esc(u.password) + '</span></div></div>' +
+      '<div class="alert info">' + ic('i-alert') + '<span>После входа пользователь может сменить пароль в разделе «Смена пароля».</span></div>' });
+  }
+  HANDLERS['student-account'] = function (t) {
+    var s = byId(DB.students, Number(t.getAttribute('data-id')));
+    var u = s.user_id ? byId(DB.users, s.user_id) : null;
+    if (!u) {
+      modal({ title: 'Учётная запись', body: '<p>У студента <b>' + esc(s.full_name) + '</b> нет учётной записи, он не может войти в кабинет.</p>', submit: 'Создать учётную запись', onSubmit: function () {
+        var cred = createAccount(s); render(); showCredentials(s, cred, 'Учётная запись создана');
+      } });
+      return;
+    }
+    modal({ title: 'Учётная запись', body: '<div class="field"><div class="lbl">Логин</div><div class="secret"><span>' + esc(u.login) + '</span>' + (u.is_active ? '<span class="chip present">активна</span>' : '<span class="chip neutral">отключена</span>') + '</div></div>' +
+      '<div class="actions"><button type="button" class="btn btn-ghost" data-m="reset">' + ic('i-key') + 'Сбросить пароль</button><button type="button" class="btn btn-ghost" data-m="toggle">' + ic('i-power') + (u.is_active ? 'Отключить' : 'Включить') + '</button></div>',
+      onOpen: function (el) {
+        el.querySelector('[data-m="reset"]').addEventListener('click', function () { u.password = genPassword(); render(); showCredentials(s, u, 'Пароль сброшен'); });
+        el.querySelector('[data-m="toggle"]').addEventListener('click', function () { u.is_active = !u.is_active; render(); toast(u.is_active ? 'Учётная запись включена' : 'Учётная запись отключена'); });
+      } });
+  };
+
+  /* ================= экран: предметы (admin) ================= */
+  function pageSubjects() {
+    var rows = DB.subjects.slice().sort(function (a, b) { return a.name.localeCompare(b.name, 'ru'); }).map(function (s) {
+      var as = DB.assignments.filter(function (a) { return a.subject_id === s.id; }).length;
+      var ls = DB.lessons.filter(function (l) { return l.subject_id === s.id; }).length;
+      return '<tr><td data-label="Предмет"><span class="cell-main">' + esc(s.name) + '</span></td><td data-label="Назначений" class="num">' + as + '</td><td data-label="Занятий" class="num">' + ls + '</td>' +
+        '<td class="act"><button class="icon-btn" data-act="edit-subject" data-id="' + s.id + '" aria-label="Изменить" title="Изменить">' + ic('i-edit') + '</button><button class="icon-btn danger" data-act="del-subject" data-id="' + s.id + '" aria-label="Удалить" title="Удалить">' + ic('i-trash') + '</button></td></tr>';
+    }).join('');
+    return {
+      title: 'Предметы', sub: DB.subjects.length + ' предметов',
+      actions: '<button class="btn btn-primary" data-act="add-subject">' + ic('i-plus') + 'Предмет</button>',
+      html: '<div class="card">' + (rows ? '<div class="tbl-wrap"><table class="t resp"><thead><tr><th>Предмет</th><th class="num">Назначений</th><th class="num">Занятий</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<div class="empty">' + ic('i-book') + '<b>Предметов нет</b>Добавьте первый предмет</div>') + '</div>'
+    };
+  }
+  function saveSubject(f, s) {
+    var n = f.elements.name.value.trim();
+    if (!n) return invalid(f, 'name');
+    if (DB.subjects.some(function (x) { return x.name.toLowerCase() === n.toLowerCase() && (!s || x.id !== s.id); })) return 'Предмет с таким названием уже есть';
+    if (s) s.name = n; else DB.subjects.push({ id: nextId('subjects'), name: n });
+    toast(s ? 'Предмет сохранён' : 'Предмет добавлен'); render(); return true;
+  }
+  HANDLERS['add-subject'] = function () { modal({ title: 'Новый предмет', body: fld('Название', 'name', inp('name', '', 'text', ' maxlength="100" placeholder="Например, Операционные системы"')), submit: 'Добавить', onSubmit: function (f) { return saveSubject(f, null); } }); };
+  HANDLERS['edit-subject'] = function (t) { var s = byId(DB.subjects, Number(t.getAttribute('data-id'))); modal({ title: 'Предмет', body: fld('Название', 'name', inp('name', s.name, 'text', ' maxlength="100"')), submit: 'Сохранить', onSubmit: function (f) { return saveSubject(f, s); } }); };
+  HANDLERS['del-subject'] = function (t) {
+    var s = byId(DB.subjects, Number(t.getAttribute('data-id')));
+    var a = DB.assignments.filter(function (x) { return x.subject_id === s.id; }).length, l = DB.lessons.filter(function (x) { return x.subject_id === s.id; }).length;
+    if (a || l) { info('Нельзя удалить предмет', 'Предмет «' + s.name + '» используется: назначений ' + a + ', занятий ' + l + '.'); return; }
+    confirmBox('Удалить предмет?', 'Предмет «' + s.name + '» будет удалён.', 'Удалить', function () { DB.subjects.splice(DB.subjects.indexOf(s), 1); toast('Предмет удалён', 'i-trash'); render(); });
+  };
+
+  /* ================= экран: пользователи и назначения (admin) ================= */
+  function pageUsers() {
+    var tabs = '<div class="tabs" role="tablist"><button data-act="users-tab" data-tab="users" class="' + (state.usersTab === 'users' ? 'active' : '') + '">Пользователи</button><button data-act="users-tab" data-tab="assign" class="' + (state.usersTab === 'assign' ? 'active' : '') + '">Назначения преподавателей</button></div>';
+    var html, actions;
+    if (state.usersTab === 'users') {
+      var order = { admin: 0, teacher: 1, student: 2 };
+      var rows = DB.users.slice().sort(function (a, b) { return order[a.role] - order[b.role] || a.full_name.localeCompare(b.full_name, 'ru'); }).map(function (u) {
+        var st = u.role === 'student' ? DB.students.filter(function (s) { return s.user_id === u.id; })[0] : null;
+        return '<tr><td data-label="Пользователь"><div class="cell-main">' + esc(u.full_name) + '</div>' + (st ? '<div class="cell-sub">Группа ' + esc(groupName(st.group_id)) + '</div>' : '') + '</td>' +
+          '<td data-label="Логин"><span class="mono">' + esc(u.login) + '</span></td><td data-label="Роль"><span class="chip ' + (u.role === 'admin' ? 'accent' : 'neutral') + '">' + ROLE[u.role] + '</span></td>' +
+          '<td data-label="Статус">' + (u.is_active ? '<span class="chip present">' + ic('i-present') + 'Активен</span>' : '<span class="chip neutral">Отключён</span>') + '</td>' +
+          '<td class="act">' + (u.role !== 'student' ? '<button class="icon-btn" data-act="edit-user" data-id="' + u.id + '" title="Изменить" aria-label="Изменить">' + ic('i-edit') + '</button>' : '') +
+          '<button class="icon-btn" data-act="reset-user" data-id="' + u.id + '" title="Сбросить пароль" aria-label="Сбросить пароль">' + ic('i-key') + '</button>' +
+          '<button class="icon-btn" data-act="toggle-user" data-id="' + u.id + '" title="' + (u.is_active ? 'Отключить' : 'Включить') + '" aria-label="' + (u.is_active ? 'Отключить' : 'Включить') + '">' + ic('i-power') + '</button>' +
+          '<button class="icon-btn danger" data-act="del-user" data-id="' + u.id + '" title="Удалить" aria-label="Удалить">' + ic('i-trash') + '</button></td></tr>';
+      }).join('');
+      actions = '<button class="btn btn-primary" data-act="add-user">' + ic('i-plus') + 'Сотрудник</button>';
+      html = '<div class="alert info" style="margin-bottom:var(--sp-4)">' + ic('i-alert') + '<span>Учётные записи студентов создаются в разделе «Группы и студенты». Здесь добавляются администраторы и преподаватели.</span></div>' +
+        '<div class="card"><div class="tbl-wrap"><table class="t resp"><thead><tr><th>Пользователь</th><th>Логин</th><th>Роль</th><th>Статус</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+    } else {
+      var arows = DB.assignments.slice().sort(function (a, b) { return userName(a.teacher_id).localeCompare(userName(b.teacher_id), 'ru') || groupName(a.group_id).localeCompare(groupName(b.group_id)); }).map(function (a) {
+        var ls = DB.lessons.filter(function (l) { return l.teacher_id === a.teacher_id && l.group_id === a.group_id && l.subject_id === a.subject_id; }).length;
+        return '<tr><td data-label="Преподаватель"><span class="cell-main">' + esc(userName(a.teacher_id)) + '</span></td><td data-label="Группа">' + esc(groupName(a.group_id)) + '</td><td data-label="Предмет">' + esc(subjName(a.subject_id)) + '</td><td data-label="Занятий" class="num">' + ls + '</td>' +
+          '<td class="act"><button class="icon-btn danger" data-act="del-assign" data-id="' + a.id + '" title="Удалить" aria-label="Удалить">' + ic('i-trash') + '</button></td></tr>';
+      }).join('');
+      actions = '<button class="btn btn-primary" data-act="add-assign">' + ic('i-plus') + 'Назначение</button>';
+      html = '<div class="alert info" style="margin-bottom:var(--sp-4)">' + ic('i-alert') + '<span>Преподаватель видит только группы и предметы из своих назначений.</span></div>' +
+        '<div class="card">' + (arows ? '<div class="tbl-wrap"><table class="t resp"><thead><tr><th>Преподаватель</th><th>Группа</th><th>Предмет</th><th class="num">Занятий</th><th></th></tr></thead><tbody>' + arows + '</tbody></table></div>' : '<div class="empty">' + ic('i-shield') + '<b>Назначений нет</b>Добавьте первое назначение</div>') + '</div>';
+    }
+    return { title: 'Пользователи и назначения', sub: DB.users.length + ' учётных записей, ' + DB.assignments.length + ' назначений', actions: actions, html: tabs + html };
+  }
+  HANDLERS['users-tab'] = function (t) { state.usersTab = t.getAttribute('data-tab'); render(); };
+  function userForm(u) {
+    return '<div class="form-grid"><div class="full">' + fld('ФИО', 'full_name', inp('full_name', u ? u.full_name : '', 'text', ' maxlength="150"')) + '</div>' +
+      fld('Логин', 'login', inp('login', u ? u.login : '', 'text', ' maxlength="50" autocapitalize="none"'), 'Латиница и цифры, от 3 символов') +
+      fld('Роль', 'role', sel('role', [['teacher', 'Преподаватель'], ['admin', 'Администратор']], u ? u.role : 'teacher')) + '</div>' +
+      (u ? '' : '<div class="alert info">' + ic('i-alert') + '<span>Временный пароль будет создан автоматически и показан после сохранения.</span></div>');
+  }
+  function saveUser(f, u) {
+    var n = f.elements.full_name.value.trim(), l = f.elements.login.value.trim().toLowerCase(), role = f.elements.role.value, ok = true;
+    if (!n) ok = invalid(f, 'full_name');
+    if (!/^[a-z0-9._-]{3,50}$/.test(l)) ok = invalid(f, 'login', 'Латиница, цифры, точка, дефис; от 3 символов');
+    if (!ok) return false;
+    if (DB.users.some(function (x) { return x.login === l && (!u || x.id !== u.id); })) return 'Логин «' + l + '» уже занят';
+    if (u) {
+      if (u.role === 'teacher' && role !== 'teacher' && DB.assignments.some(function (a) { return a.teacher_id === u.id; })) return 'Нельзя сменить роль: у преподавателя есть назначения';
+      if (u.id === state.user.id && role !== 'admin') return 'Нельзя снять роль администратора с самого себя';
+      u.full_name = n; u.login = l; u.role = role; toast('Изменения сохранены'); render(); return true;
+    }
+    var nu = { id: nextId('users'), login: l, password: genPassword(), role: role, full_name: n, is_active: true };
+    DB.users.push(nu); render(); showCredentials(nu, nu, 'Сотрудник добавлен');
+  }
+  HANDLERS['add-user'] = function () { modal({ title: 'Новый сотрудник', body: userForm(null), submit: 'Добавить', onSubmit: function (f) { return saveUser(f, null); } }); };
+  HANDLERS['edit-user'] = function (t) { var u = byId(DB.users, Number(t.getAttribute('data-id'))); modal({ title: 'Пользователь', body: userForm(u), submit: 'Сохранить', onSubmit: function (f) { return saveUser(f, u); } }); };
+  HANDLERS['reset-user'] = function (t) {
+    var u = byId(DB.users, Number(t.getAttribute('data-id')));
+    confirmBox('Сбросить пароль?', 'Для ' + u.full_name + ' будет создан новый временный пароль. Старый перестанет работать.', 'Сбросить', function () { u.password = genPassword(); setTimeout(function () { showCredentials(u, u, 'Пароль сброшен'); }, 0); });
+  };
+  HANDLERS['toggle-user'] = function (t) {
+    var u = byId(DB.users, Number(t.getAttribute('data-id')));
+    if (u.id === state.user.id) { info('Действие недоступно', 'Нельзя отключить собственную учётную запись.'); return; }
+    u.is_active = !u.is_active; toast(u.is_active ? 'Учётная запись включена' : 'Учётная запись отключена'); render();
+  };
+  HANDLERS['del-user'] = function (t) {
+    var u = byId(DB.users, Number(t.getAttribute('data-id')));
+    if (u.id === state.user.id) { info('Действие недоступно', 'Нельзя удалить собственную учётную запись.'); return; }
+    var a = DB.assignments.filter(function (x) { return x.teacher_id === u.id; }).length, l = DB.lessons.filter(function (x) { return x.teacher_id === u.id; }).length;
+    var st = DB.students.filter(function (s) { return s.user_id === u.id; })[0];
+    if (a || l) { info('Нельзя удалить пользователя', 'У преподавателя есть назначения (' + a + ') и занятия (' + l + '). Отключите учётную запись вместо удаления.'); return; }
+    if (st) { info('Нельзя удалить пользователя', 'Учётная запись привязана к студенту ' + st.full_name + '. Отключите её или удалите студента в разделе «Группы и студенты».'); return; }
+    confirmBox('Удалить пользователя?', u.full_name + ' (' + u.login + ') будет удалён.', 'Удалить', function () { DB.users.splice(DB.users.indexOf(u), 1); toast('Пользователь удалён', 'i-trash'); render(); });
+  };
+  HANDLERS['add-assign'] = function () {
+    var teachers = DB.users.filter(function (u) { return u.role === 'teacher' && u.is_active; }).map(function (u) { return [u.id, u.full_name]; });
+    if (!teachers.length || !DB.groups.length || !DB.subjects.length) { info('Не хватает данных', 'Для назначения нужны активный преподаватель, группа и предмет.'); return; }
+    modal({ title: 'Новое назначение', body: fld('Преподаватель', 'teacher_id', sel('teacher_id', teachers)) +
+      '<div class="form-grid">' + fld('Группа', 'group_id', sel('group_id', DB.groups.map(function (g) { return [g.id, g.name]; }))) + fld('Предмет', 'subject_id', sel('subject_id', DB.subjects.map(function (s) { return [s.id, s.name]; }))) + '</div>',
+      submit: 'Добавить', onSubmit: function (f) {
+        var a = { teacher_id: Number(f.elements.teacher_id.value), group_id: Number(f.elements.group_id.value), subject_id: Number(f.elements.subject_id.value) };
+        if (DB.assignments.some(function (x) { return x.teacher_id === a.teacher_id && x.group_id === a.group_id && x.subject_id === a.subject_id; })) return 'Такое назначение уже есть';
+        a.id = nextId('assignments'); DB.assignments.push(a); toast('Назначение добавлено'); render(); return true;
+      } });
+  };
+  HANDLERS['del-assign'] = function (t) {
+    var a = byId(DB.assignments, Number(t.getAttribute('data-id')));
+    var l = DB.lessons.filter(function (x) { return x.teacher_id === a.teacher_id && x.group_id === a.group_id && x.subject_id === a.subject_id; }).length;
+    if (l) { info('Нельзя удалить назначение', 'По этому назначению проведено занятий: ' + l + '. История занятий сохраняется.'); return; }
+    confirmBox('Удалить назначение?', userName(a.teacher_id) + ': ' + groupName(a.group_id) + ', ' + subjName(a.subject_id) + '.', 'Удалить', function () { DB.assignments.splice(DB.assignments.indexOf(a), 1); toast('Назначение удалено', 'i-trash'); render(); });
+  };
+
+  /* ================= экран: мои занятия (teacher) ================= */
+  function myAssignments() { return DB.assignments.filter(function (a) { return a.teacher_id === state.user.id; }); }
+  function lessonMarked(l) { return DB.attendance.filter(function (a) { return a.lesson_id === l.id; }); }
+  function pageLessons() {
+    var my = myAssignments();
+    var cards = my.map(function (a) {
+      var ls = DB.lessons.filter(function (l) { return l.teacher_id === state.user.id && l.group_id === a.group_id && l.subject_id === a.subject_id; });
+      var p = calc(attFor(ls.map(function (l) { return l.id; }))).pct;
+      return '<button class="acard' + (state.lessonFilter === a.id ? ' active' : '') + '" data-act="lesson-filter" data-id="' + a.id + '"><div class="g">' + esc(groupName(a.group_id)) + '</div><div class="s">' + esc(subjName(a.subject_id)) + '</div><div class="row"><span class="s">' + ls.length + ' занятий</span><span class="pct">' + pctText(p) + '</span></div></button>';
+    }).join('');
+    var fa = state.lessonFilter === 'all' ? null : byId(DB.assignments, state.lessonFilter);
+    var list = DB.lessons.filter(function (l) { return l.teacher_id === state.user.id && (!fa || (l.group_id === fa.group_id && l.subject_id === fa.subject_id)); })
+      .sort(function (a, b) { return b.lesson_date.localeCompare(a.lesson_date) || b.pair_number - a.pair_number; });
+    var rows = list.map(function (l) {
+      var m = lessonMarked(l), total = groupStudents(l.group_id).length;
+      var stt = m.length ? '<span class="chip present">' + ic('i-check') + 'Отмечено ' + m.length + '/' + total + '</span>' : '<span class="chip late">' + ic('i-alert') + 'Не отмечено</span>';
+      return '<tr class="click" data-go="#/lesson/' + l.id + '"><td data-label="Дата"><div class="cell-main">' + fmtDate(l.lesson_date) + '</div><div class="cell-sub">' + wd(l.lesson_date) + ', ' + l.pair_number + ' пара</div></td>' +
+        '<td data-label="Группа">' + esc(groupName(l.group_id)) + '</td><td data-label="Предмет"><div>' + esc(subjName(l.subject_id)) + '</div><div class="cell-sub">' + esc(l.topic || 'Тема не указана') + '</div></td>' +
+        '<td data-label="Посещаемость">' + stt + '</td>' +
+        '<td class="act"><button class="btn btn-' + (m.length ? 'ghost' : 'primary') + ' btn-sm" data-go="#/lesson/' + l.id + '">' + ic('i-clipboard') + (m.length ? 'Изменить' : 'Отметить') + '</button>' +
+        '<button class="icon-btn" data-act="edit-lesson" data-id="' + l.id + '" title="Изменить занятие" aria-label="Изменить занятие">' + ic('i-edit') + '</button>' +
+        '<button class="icon-btn danger" data-act="del-lesson" data-id="' + l.id + '" title="Удалить занятие" aria-label="Удалить занятие">' + ic('i-trash') + '</button></td></tr>';
+    }).join('');
+    var unmarked = DB.lessons.filter(function (l) { return l.teacher_id === state.user.id && !lessonMarked(l).length; }).length;
+    return {
+      title: 'Мои занятия', sub: my.length + ' назначений' + (unmarked ? ', без отметки: ' + unmarked : ''),
+      actions: '<button class="btn btn-primary" data-act="add-lesson">' + ic('i-plus') + 'Занятие</button>',
+      html: '<div class="stack">' + (my.length ? '<div class="acards"><button class="acard' + (state.lessonFilter === 'all' ? ' active' : '') + '" data-act="lesson-filter" data-id="all"><div class="g">Все</div><div class="s">Все группы и предметы</div><div class="row"><span class="s">' + DB.lessons.filter(function (l) { return l.teacher_id === state.user.id; }).length + ' занятий</span></div></button>' + cards + '</div>' : '<div class="alert warn">' + ic('i-alert') + '<span>У вас нет назначений. Обратитесь к администратору.</span></div>') +
+        '<div class="card"><div class="card-head"><h3>' + (fa ? esc(groupName(fa.group_id) + ', ' + subjName(fa.subject_id)) : 'Все занятия') + '</h3><span class="muted" style="font-size:13px">' + list.length + ' занятий</span></div>' +
+        (rows ? '<div class="tbl-wrap"><table class="t resp"><thead><tr><th>Дата</th><th>Группа</th><th>Предмет и тема</th><th>Посещаемость</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<div class="empty">' + ic('i-calendar') + '<b>Занятий пока нет</b>Создайте занятие кнопкой «Занятие»</div>') + '</div></div>'
+    };
+  }
+  HANDLERS['lesson-filter'] = function (t) { var v = t.getAttribute('data-id'); state.lessonFilter = v === 'all' ? 'all' : Number(v); render(); };
+  function lessonForm(l) {
+    var my = myAssignments().map(function (a) { return [a.id, groupName(a.group_id) + ' — ' + subjName(a.subject_id)]; });
+    var cur = l ? myAssignments().filter(function (a) { return a.group_id === l.group_id && a.subject_id === l.subject_id; })[0] : (state.lessonFilter !== 'all' ? byId(DB.assignments, state.lessonFilter) : null);
+    var pairs = []; for (var i = 1; i <= 8; i++) pairs.push([i, i + ' пара']);
+    return '<div class="form-grid"><div class="full">' + fld('Группа и предмет', 'assign', sel('assign', my, cur ? cur.id : '')) + '</div>' +
+      fld('Дата', 'lesson_date', inp('lesson_date', l ? l.lesson_date : TODAY, 'date')) + fld('Пара', 'pair_number', sel('pair_number', pairs, l ? l.pair_number : 1)) +
+      '<div class="full">' + fld('Тема', 'topic', inp('topic', l ? l.topic : '', 'text', ' maxlength="200" placeholder="Необязательно"')) + '</div></div>';
+  }
+  function saveLesson(f, l) {
+    var a = byId(DB.assignments, Number(f.elements.assign.value)), d = f.elements.lesson_date.value, p = Number(f.elements.pair_number.value);
+    if (!d) return invalid(f, 'lesson_date', 'Укажите дату');
+    if (d > TODAY) return invalid(f, 'lesson_date', 'Дата не может быть в будущем');
+    if (l && lessonMarked(l).length && (a.group_id !== l.group_id)) return 'Нельзя сменить группу: по занятию уже есть отметки';
+    if (DB.lessons.some(function (x) { return x.group_id === a.group_id && x.lesson_date === d && x.pair_number === p && (!l || x.id !== l.id); })) return 'У группы ' + groupName(a.group_id) + ' уже есть занятие ' + fmtDate(d) + ' в ' + p + ' пару';
+    var topic = f.elements.topic.value.trim() || null;
+    if (l) { l.lesson_date = d; l.pair_number = p; l.group_id = a.group_id; l.subject_id = a.subject_id; l.topic = topic; toast('Занятие сохранено'); render(); return true; }
+    var nl = { id: nextId('lessons'), lesson_date: d, pair_number: p, group_id: a.group_id, subject_id: a.subject_id, teacher_id: state.user.id, topic: topic };
+    DB.lessons.push(nl); toast('Занятие создано, отметьте посещаемость'); closeModal(); go('#/lesson/' + nl.id); return true;
+  }
+  HANDLERS['add-lesson'] = function () {
+    if (!myAssignments().length) { info('Нет назначений', 'Создать занятие можно только по своему назначению. Обратитесь к администратору.'); return; }
+    modal({ title: 'Новое занятие', body: lessonForm(null), submit: 'Создать и отметить', onSubmit: function (f) { return saveLesson(f, null); } });
+  };
+  HANDLERS['edit-lesson'] = function (t, e) { e.stopPropagation(); var l = byId(DB.lessons, Number(t.getAttribute('data-id'))); modal({ title: 'Занятие', body: lessonForm(l), submit: 'Сохранить', onSubmit: function (f) { return saveLesson(f, l); } }); };
+  HANDLERS['del-lesson'] = function (t, e) {
+    e.stopPropagation();
+    var l = byId(DB.lessons, Number(t.getAttribute('data-id'))), m = lessonMarked(l).length;
+    if (m) { info('Нельзя удалить занятие', 'По занятию сохранено отметок: ' + m + '. История посещаемости не удаляется.'); return; }
+    confirmBox('Удалить занятие?', groupName(l.group_id) + ', ' + subjName(l.subject_id) + ', ' + fmtDate(l.lesson_date) + '.', 'Удалить', function () { DB.lessons.splice(DB.lessons.indexOf(l), 1); toast('Занятие удалено', 'i-trash'); render(); });
+  };
+
+  /* ================= экран: отметка посещаемости (teacher) ================= */
+  var draft = null;
+  function pageLesson(r) {
+    var l = byId(DB.lessons, r.id);
+    if (!l || l.teacher_id !== state.user.id) {
+      return { title: 'Занятие не найдено', back: ['#/lessons', 'Мои занятия'], html: '<div class="card"><div class="empty">' + ic('i-alert') + '<b>Занятие недоступно</b>Оно удалено или относится к другому преподавателю.</div></div>' };
+    }
+    var studs = groupStudents(l.group_id).slice().sort(function (a, b) { return a.full_name.localeCompare(b.full_name, 'ru'); });
+    var saved = lessonMarked(l);
+    if (!draft || draft.lessonId !== l.id) {
+      draft = { lessonId: l.id, st: {} };
+      studs.forEach(function (s) { var a = saved.filter(function (x) { return x.student_id === s.id; })[0]; draft.st[s.id] = a ? a.status : 'present'; });
+      state.dirty = false;
+    }
+    var rows = studs.map(function (s, i) {
+      return '<div class="mrow"><div class="n">' + (i + 1) + '</div><div class="nm">' + esc(s.full_name) + '</div><div class="seg" role="radiogroup" aria-label="Статус: ' + esc(s.full_name) + '">' +
+        STATUSES.map(function (k) { return '<button type="button" role="radio" aria-checked="' + (draft.st[s.id] === k) + '" class="' + k + (draft.st[s.id] === k ? ' on' : '') + '" data-act="mark" data-s="' + s.id + '" data-v="' + k + '" title="' + ST[k].label + '">' + ic(ST[k].icon) + '<span>' + ST[k].label + '</span></button>'; }).join('') + '</div></div>';
+    }).join('');
+    return {
+      title: esc(groupName(l.group_id)) + ': ' + esc(subjName(l.subject_id)),
+      sub: fmtDate(l.lesson_date) + ', ' + wd(l.lesson_date) + ', ' + l.pair_number + ' пара' + (l.topic ? ' · ' + esc(l.topic) : '') + (saved.length ? ' · отметки сохранены ранее' : ' · отметок ещё нет'),
+      back: ['#/lessons', 'Мои занятия'],
+      html: '<div class="card"><div class="mark-head"><div class="counters" id="counters"></div><div class="actions"><button class="btn btn-ghost btn-sm" data-act="mark-all" data-v="present">' + ic('i-present') + 'Все были</button><button class="btn btn-ghost btn-sm" data-act="mark-all" data-v="absent">' + ic('i-absent') + 'Все отсутствовали</button></div></div>' +
+        (studs.length ? rows : '<div class="empty">' + ic('i-users') + '<b>В группе нет студентов</b></div>') +
+        '<div class="sticky-save"><span class="muted" id="dirtyNote" style="font-size:13px"></span><div class="actions"><button class="btn btn-ghost" data-go="#/lessons">Отмена</button><button class="btn btn-primary" data-act="save-marks"' + (studs.length ? '' : ' disabled') + '>' + ic('i-save') + 'Сохранить отметки</button></div></div></div>',
+      after: updateCounters
+    };
+  }
+  function updateCounters() {
+    if (!draft) return;
+    var c = { present: 0, absent: 0, excused: 0, late: 0 }, arr = [];
+    Object.keys(draft.st).forEach(function (k) { c[draft.st[k]]++; arr.push({ status: draft.st[k] }); });
+    var p = calc(arr).pct;
+    var el = document.getElementById('counters'); if (!el) return;
+    el.innerHTML = STATUSES.map(function (k) { return '<span class="chip ' + k + '">' + ic(ST[k].icon) + ST[k].label + ': ' + c[k] + '</span>'; }).join('') + '<span class="chip accent">Посещаемость: ' + pctText(p) + '</span>';
+    var dn = document.getElementById('dirtyNote'); if (dn) dn.textContent = state.dirty ? 'Есть несохранённые изменения' : '';
+  }
+  HANDLERS.mark = function (t) {
+    var s = Number(t.getAttribute('data-s')), v = t.getAttribute('data-v');
+    draft.st[s] = v; state.dirty = true;
+    t.parentNode.querySelectorAll('button').forEach(function (b) { var on = b.getAttribute('data-v') === v; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
+    updateCounters();
+  };
+  HANDLERS['mark-all'] = function (t) {
+    var v = t.getAttribute('data-v');
+    Object.keys(draft.st).forEach(function (k) { draft.st[k] = v; });
+    state.dirty = true;
+    root.querySelectorAll('[data-act="mark"]').forEach(function (b) { var on = b.getAttribute('data-v') === v; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
+    updateCounters();
+  };
+  HANDLERS['save-marks'] = function () {
+    var l = byId(DB.lessons, draft.lessonId);
+    DB.attendance = DB.attendance.filter(function (a) { return a.lesson_id !== l.id; });
+    Object.keys(draft.st).forEach(function (sid) { DB.attendance.push({ id: nextId('attendance'), lesson_id: l.id, student_id: Number(sid), status: draft.st[sid], note: null }); });
+    state.dirty = false; draft = null;
+    toast('Отметки сохранены'); go('#/lessons');
+  };
+
+  /* ================= экран: отчёты (admin, teacher) ================= */
+  function repScope() {
+    /* набор допустимых групп и предметов: администратор — все, преподаватель — свои назначения */
+    if (state.user.role === 'admin') return { groups: DB.groups.map(function (g) { return g.id; }), pairs: null };
+    var my = myAssignments();
+    var gs = []; my.forEach(function (a) { if (gs.indexOf(a.group_id) < 0) gs.push(a.group_id); });
+    return { groups: gs, pairs: my };
+  }
+  function repLessons(f) {
+    var sc = repScope();
+    return DB.lessons.filter(function (l) {
+      if (l.group_id !== f.group) return false;
+      if (f.subject !== 'all' && l.subject_id !== f.subject) return false;
+      if (f.from && l.lesson_date < f.from) return false;
+      if (f.to && l.lesson_date > f.to) return false;
+      if (sc.pairs && !sc.pairs.some(function (a) { return a.group_id === l.group_id && a.subject_id === l.subject_id && l.teacher_id === state.user.id; })) return false;
+      return true;
+    });
+  }
+  function repSubjects(gid) {
+    var sc = repScope(), ids = [];
+    if (sc.pairs) sc.pairs.forEach(function (a) { if (a.group_id === gid && ids.indexOf(a.subject_id) < 0) ids.push(a.subject_id); });
+    else DB.assignments.forEach(function (a) { if (a.group_id === gid && ids.indexOf(a.subject_id) < 0) ids.push(a.subject_id); });
+    return ids;
+  }
+  function pageReports() {
+    var sc = repScope();
+    if (!state.rep || sc.groups.indexOf(state.rep.group) < 0) state.rep = { group: sc.groups[0], subject: 'all', from: '2026-10-26', to: TODAY };
+    var f = state.rep;
+    if (!sc.groups.length) return { title: 'Отчёты', html: '<div class="card"><div class="empty">' + ic('i-chart') + '<b>Нет данных для отчёта</b>У вас нет назначений.</div></div>' };
+    var subs = repSubjects(f.group);
+    if (f.subject !== 'all' && subs.indexOf(f.subject) < 0) f.subject = 'all';
+    var ls = repLessons(f), lids = ls.map(function (l) { return l.id; });
+    var studs = groupStudents(f.group).slice().sort(function (a, b) { return a.full_name.localeCompare(b.full_name, 'ru'); });
+    var all = attFor(lids), tot = calc(all);
+    var rows = studs.map(function (s) {
+      var c = calc(all.filter(function (a) { return a.student_id === s.id; }));
+      return { s: s, c: c };
+    });
+    rows.sort(function (a, b) { return (a.c.pct == null ? 101 : a.c.pct) - (b.c.pct == null ? 101 : b.c.pct); });
+    var body = rows.map(function (x) {
+      return '<tr class="click" data-act="student-report" data-id="' + x.s.id + '"><td data-label="Студент"><span class="cell-main">' + esc(x.s.full_name) + '</span></td>' +
+        '<td data-label="Был" class="num">' + x.c.present + '</td><td data-label="Опоздал" class="num">' + x.c.late + '</td><td data-label="Не был" class="num">' + x.c.absent + '</td><td data-label="Уважительная" class="num">' + x.c.excused + '</td>' +
+        '<td data-label="Посещаемость" class="num">' + bar(x.c.pct) + '</td></tr>';
+    }).join('');
+    var gopts = sc.groups.map(function (id) { return [id, groupName(id)]; });
+    var sopts = [['all', 'Все предметы']].concat(subs.map(function (id) { return [id, subjName(id)]; }));
+    return {
+      title: 'Отчёты', sub: state.user.role === 'admin' ? 'Все группы и предметы' : 'Только ваши группы и предметы',
+      html: '<div class="stack"><div class="card"><div class="toolbar" style="border-bottom:0">' +
+          '<div class="field"><label for="f-r-g">Группа</label>' + sel('r-g', gopts, f.group).replace('<select', '<select data-change="rep" data-k="group"') + '</div>' +
+          '<div class="field"><label for="f-r-s">Предмет</label>' + sel('r-s', sopts, f.subject).replace('<select', '<select data-change="rep" data-k="subject"') + '</div>' +
+          '<div class="field"><label for="r-f">С</label><input class="ctl" type="date" id="r-f" value="' + f.from + '" data-change="rep" data-k="from"></div>' +
+          '<div class="field"><label for="r-t">По</label><input class="ctl" type="date" id="r-t" value="' + f.to + '" data-change="rep" data-k="to"></div>' +
+        '</div></div>' +
+        '<div class="kpis"><div class="card kpi"><div class="v accent">' + pctText(tot.pct) + '</div><div class="l">Средняя посещаемость</div></div><div class="card kpi"><div class="v">' + ls.length + '</div><div class="l">Занятий за период</div></div>' +
+        '<div class="card kpi"><div class="v">' + tot.absent + '</div><div class="l">Пропусков без причины</div></div><div class="card kpi"><div class="v">' + tot.late + '</div><div class="l">Опозданий</div></div></div>' +
+        '<div class="card"><div class="card-head"><h3>Студенты группы ' + esc(groupName(f.group)) + '</h3><span class="muted" style="font-size:13px">Сначала с низкой посещаемостью. Нажмите на строку для подробностей.</span></div>' +
+        (ls.length ? '<div class="tbl-wrap"><table class="t resp"><thead><tr><th>Студент</th><th class="num">Был</th><th class="num">Опоздал</th><th class="num">Не был</th><th class="num">Уваж.</th><th class="num">Посещаемость</th></tr></thead><tbody>' + body + '</tbody></table></div>'
+          : '<div class="empty">' + ic('i-chart') + '<b>За период занятий нет</b>Измените фильтры</div>') +
+        '</div><div class="muted" style="font-size:12.5px">Посещаемость = (был + опоздал) / (все отметки − уважительные) × 100.</div></div>'
+    };
+  }
+  HANDLERS.rep = function (t) {
+    var k = t.getAttribute('data-k'), v = t.value;
+    if (k === 'group') { state.rep.group = Number(v); state.rep.subject = 'all'; }
+    else if (k === 'subject') state.rep.subject = v === 'all' ? 'all' : Number(v);
+    else if (k === 'from') state.rep.from = v;
+    else if (k === 'to') state.rep.to = v;
+    if (state.rep.from && state.rep.to && state.rep.from > state.rep.to) { toast('Дата «С» позже даты «По»', 'i-alert'); }
+    render();
+  };
+  function studentDetail(s, lessonsList) {
+    var lids = lessonsList.map(function (l) { return l.id; });
+    var recs = attFor(lids, [s.id]);
+    var bySub = {};
+    lessonsList.forEach(function (l) { (bySub[l.subject_id] = bySub[l.subject_id] || []).push(l.id); });
+    var cards = Object.keys(bySub).map(function (sid) {
+      var c = calc(recs.filter(function (a) { return bySub[sid].indexOf(a.lesson_id) >= 0; }));
+      return '<div class="card subj"><div class="h"><span class="nm">' + esc(subjName(Number(sid))) + '</span><span class="pc">' + pctText(c.pct) + '</span></div><div class="bar-track"><div class="bar-fill" style="width:' + (c.pct || 0) + '%"></div></div>' +
+        '<div class="cnt"><span>Был: ' + c.present + '</span><span>Опоздал: ' + c.late + '</span><span>Не был: ' + c.absent + '</span><span>Уваж.: ' + c.excused + '</span></div></div>';
+    }).join('');
+    var hist = recs.map(function (a) { return { a: a, l: byId(DB.lessons, a.lesson_id) }; }).sort(function (x, y) { return y.l.lesson_date.localeCompare(x.l.lesson_date) || y.l.pair_number - x.l.pair_number; })
+      .map(function (x) { return '<tr><td data-label="Дата">' + fmtDate(x.l.lesson_date) + ', ' + x.l.pair_number + ' пара</td><td data-label="Предмет">' + esc(subjName(x.l.subject_id)) + '</td><td data-label="Статус">' + chip(x.a.status) + '</td></tr>'; }).join('');
+    return { cards: cards, hist: hist, total: calc(recs) };
+  }
+  HANDLERS['student-report'] = function (t) {
+    var s = byId(DB.students, Number(t.getAttribute('data-id')));
+    var d = studentDetail(s, repLessons(state.rep));
+    modal({ wide: true, title: s.full_name, body: '<div class="muted">Группа ' + esc(groupName(s.group_id)) + ', период ' + fmtDate(state.rep.from) + ' — ' + fmtDate(state.rep.to) + '. Общая посещаемость: <b style="color:var(--accent)">' + pctText(d.total.pct) + '</b></div>' +
+      (d.cards ? '<div class="subj-grid">' + d.cards + '</div>' : '') +
+      (d.hist ? '<div class="card"><div class="tbl-wrap"><table class="t resp"><thead><tr><th>Дата</th><th>Предмет</th><th>Статус</th></tr></thead><tbody>' + d.hist + '</tbody></table></div></div>' : '<div class="empty"><b>Отметок за период нет</b></div>') });
+  };
+
+  /* ================= экран: кабинет студента ================= */
+  function pageCabinet() {
+    var s = DB.students.filter(function (x) { return x.user_id === state.user.id; })[0];
+    if (!s) return { title: 'Моя посещаемость', html: '<div class="card"><div class="empty">' + ic('i-alert') + '<b>Учётная запись не привязана к студенту</b>Обратитесь к администратору.</div></div>' };
+    var ls = DB.lessons.filter(function (l) { return l.group_id === s.group_id; });
+    var subIds = []; ls.forEach(function (l) { if (subIds.indexOf(l.subject_id) < 0) subIds.push(l.subject_id); });
+    var filtered = state.cabSubject === 'all' ? ls : ls.filter(function (l) { return l.subject_id === state.cabSubject; });
+    var all = studentDetail(s, ls), d = studentDetail(s, filtered);
+    var first = s.full_name.split(' ')[1] || s.full_name;
+    return {
+      title: 'Моя посещаемость', sub: 'Группа ' + esc(groupName(s.group_id)),
+      html: '<div class="stack"><div class="card hello"><div><h2>Здравствуйте, ' + esc(first) + '</h2><div class="muted">Данные по всем занятиям вашей группы. Отметки ставит преподаватель.</div></div><div style="text-align:right"><div class="big-pct">' + pctText(all.total.pct) + '</div><div class="muted" style="font-size:13px">общая посещаемость</div></div></div>' +
+        '<div class="kpis"><div class="card kpi"><div class="v">' + all.total.total + '</div><div class="l">Отмечено занятий</div></div><div class="card kpi"><div class="v">' + all.total.absent + '</div><div class="l">Пропусков</div></div><div class="card kpi"><div class="v">' + all.total.late + '</div><div class="l">Опозданий</div></div><div class="card kpi"><div class="v">' + all.total.excused + '</div><div class="l">По уважительной</div></div></div>' +
+        '<div><h3 style="font-size:16px;font-weight:800;margin-bottom:12px">По предметам</h3><div class="subj-grid">' + (all.cards || '<div class="muted">Пока нет данных</div>') + '</div></div>' +
+        '<div class="card"><div class="card-head"><h3>История отметок</h3><div class="field" style="min-width:200px">' + sel('cab-s', [['all', 'Все предметы']].concat(subIds.map(function (id) { return [id, subjName(id)]; })), state.cabSubject).replace('<select', '<select data-change="cab" aria-label="Предмет"') + '</div></div>' +
+        (d.hist ? '<div class="tbl-wrap"><table class="t resp"><thead><tr><th>Дата</th><th>Предмет</th><th>Статус</th></tr></thead><tbody>' + d.hist + '</tbody></table></div>' : '<div class="empty">' + ic('i-calendar') + '<b>Отметок пока нет</b></div>') + '</div></div>'
+    };
+  }
+  HANDLERS.cab = function (t) { state.cabSubject = t.value === 'all' ? 'all' : Number(t.value); render(); };
+
+  /* ================= экран: смена пароля (все роли) ================= */
+  function pagePassword() {
+    return {
+      title: 'Смена пароля', sub: 'Учётная запись: ' + esc(state.user.login),
+      html: '<div class="card card-pad" style="max-width:520px"><form id="pwForm" class="stack" novalidate>' +
+        '<div class="alert ok" id="pwOk" style="display:none">' + ic('i-check') + '<span>Пароль изменён. Используйте его при следующем входе.</span></div>' +
+        '<div class="alert err" id="pwBad" style="display:none">' + ic('i-alert') + '<span></span></div>' +
+        fld('Текущий пароль', 'cur', inp('cur', '', 'password', ' autocomplete="current-password"')) +
+        fld('Новый пароль', 'np', inp('np', '', 'password', ' autocomplete="new-password"'), 'Не короче 8 символов') +
+        fld('Повторите новый пароль', 'np2', inp('np2', '', 'password', ' autocomplete="new-password"')) +
+        '<div><button class="btn btn-primary" type="submit">' + ic('i-save') + 'Сохранить пароль</button></div></form></div>',
+      after: function () {
+        var f = document.getElementById('pwForm');
+        f.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var ok = document.getElementById('pwOk'), bad = document.getElementById('pwBad');
+          ok.style.display = 'none'; bad.style.display = 'none';
+          f.querySelectorAll('.field').forEach(function (x) { x.classList.remove('invalid'); });
+          var c = f.elements.cur.value, n = f.elements.np.value, n2 = f.elements.np2.value, v = true;
+          if (!c) v = invalid(f, 'cur');
+          if (n.length < 8) v = invalid(f, 'np', 'Не короче 8 символов');
+          if (n2 !== n) v = invalid(f, 'np2', 'Пароли не совпадают');
+          if (!v) return;
+          if (c !== state.user.password) { bad.style.display = 'flex'; bad.querySelector('span').textContent = 'Текущий пароль указан неверно'; return; }
+          if (n === c) { invalid(f, 'np', 'Новый пароль совпадает с текущим'); return; }
+          state.user.password = n; f.reset(); ok.style.display = 'flex'; toast('Пароль изменён');
+        });
+      }
+    };
+  }
+
+  var PAGES = { groups: pageGroups, subjects: pageSubjects, users: pageUsers, lessons: pageLessons, lesson: pageLesson, reports: pageReports, cabinet: pageCabinet, password: pagePassword };
+
+  /* тема на экране входа (кнопка вне делегированных зон обрабатывается тем же обработчиком) */
+  render();
+})();
+</script>
+</body>
+</html>
