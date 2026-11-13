@@ -1,6 +1,6 @@
 # Спецификация: веб-приложение учёта посещаемости студентов
 
-Документ для сборки проекта. Печатный документ для учителя — отдельный файл (`ЧР 1.docx`).
+Документ для сборки проекта. Печатный документ для учителя — отдельный файл (`14. Холиков Ахад.docx`).
 
 ## 1. Цель и границы
 
@@ -202,7 +202,7 @@ erDiagram
 ## 9. Структура репозитория
 
 ```
-docs/        PLAN.md, SPEC.md, DB_STRUCTURE.xlsx, ERD.png/svg, RUN.md, ЧР 1.docx
+docs/        PLAN.md, SPEC.md, DB_STRUCTURE.xlsx, ERD.png/svg, RUN.md, 14. Холиков Ахад.docx
 docs/diagrams/  исходники (SVG) и картинки (PNG) диаграмм для печатного документа
 mockups/     макеты HTML, !DESIGN_TOKENS.html
 src/         решение .NET (API + wwwroot)
