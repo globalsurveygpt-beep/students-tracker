@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="810" height="960" viewBox="0 0 810 960"><rect width="810" height="960" fill="#fff"/><path d="M235,80 L287,80" fill="none" stroke="#000" stroke-width="1.6"/>
+<text x="244" y="72" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="middle">1</text>
+<text x="278" y="72" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="middle">N</text>
+<path d="M502,80 L554,80" fill="none" stroke="#000" stroke-width="1.6"/>
+<text x="545" y="72" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="middle">1</text>
+<text x="511" y="72" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="middle">N</text>
+<path d="M394,168 L394,250" fill="none" stroke="#000" stroke-width="1.6"/>
+<text x="406" y="190" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="start">N</text>
+<text x="406" y="244" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="start">1</text>
+<path d="M661,144 L661,250" fill="none" stroke="#000" stroke-width="1.6"/>
+<text x="673" y="162" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="start">1</text>
+<text x="673" y="244" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="start">N</text>
+<path d="M554,310 L502,310" fill="none" stroke="#000" stroke-width="1.6"/>
+<text x="510" y="302" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="start">1</text>
+<text x="550" y="326" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="end">0..1</text>
+<path d="M127,120 L127,600" fill="none" stroke="#000" stroke-width="1.6"/>
+<text x="139" y="140" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="start">1</text>
+<text x="139" y="594" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="start">N</text>
+<path d="M235,640 L261,640 L261,400 L287,400" fill="none" stroke="#000" stroke-width="1.6"/>
+<text x="245" y="632" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="middle">N</text>
+<text x="277" y="392" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="middle">1</text>
+<path d="M235,770 L287,770" fill="none" stroke="#000" stroke-width="1.6"/>
+<text x="244" y="762" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="middle">1</text>
+<text x="278" y="762" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="middle">N</text>
+<path d="M620,378 L620,800 L502,800" fill="none" stroke="#000" stroke-width="1.6"/>
+<text x="632" y="396" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="start">1</text>
+<text x="512" y="792" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="middle">N</text>
+<path d="M769,80 L792,80 L792,930 L170,930 L170,800" fill="none" stroke="#000" stroke-width="1.6"/>
+<text x="780" y="72" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="middle">1</text>
+<text x="182" y="818" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="start">N</text>
+<text x="405.0" y="26" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#333" text-anchor="middle">Все внешние ключи: ON DELETE RESTRICT</text>
+<rect x="20" y="40" width="215" height="80" rx="6" fill="#fff" stroke="#000" stroke-width="2"/>
+<path d="M20,72 L20,46 Q20,40 26,40 L229,40 Q235,40 235,46 L235,72 Z" fill="#e6e6e6" stroke="#000" stroke-width="2"/>
+<text x="127.5" y="62" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" text-anchor="middle">subjects</text>
+<text x="30" y="89" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">id</text>
+<text x="225" y="89" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · PK</text>
+<text x="30" y="113" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">name</text>
+<text x="225" y="113" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">varchar(200) · UK</text>
+<rect x="287" y="40" width="215" height="128" rx="6" fill="#fff" stroke="#000" stroke-width="2"/>
+<path d="M287,72 L287,46 Q287,40 293,40 L496,40 Q502,40 502,46 L502,72 Z" fill="#e6e6e6" stroke="#000" stroke-width="2"/>
+<text x="394.5" y="62" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" text-anchor="middle">teaching_assignments</text>
+<text x="297" y="89" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">id</text>
+<text x="492" y="89" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · PK</text>
+<text x="297" y="113" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">teacher_id</text>
+<text x="492" y="113" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · FK</text>
+<text x="297" y="137" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">group_id</text>
+<text x="492" y="137" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · FK</text>
+<text x="297" y="161" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">subject_id</text>
+<text x="492" y="161" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · FK</text>
+<rect x="554" y="40" width="215" height="104" rx="6" fill="#fff" stroke="#000" stroke-width="2"/>
+<path d="M554,72 L554,46 Q554,40 560,40 L763,40 Q769,40 769,46 L769,72 Z" fill="#e6e6e6" stroke="#000" stroke-width="2"/>
+<text x="661.5" y="62" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" text-anchor="middle">groups</text>
+<text x="564" y="89" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">id</text>
+<text x="759" y="89" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · PK</text>
+<text x="564" y="113" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">name</text>
+<text x="759" y="113" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">varchar(50) · UK</text>
+<text x="564" y="137" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">start_year</text>
+<text x="759" y="137" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">smallint</text>
+<rect x="287" y="250" width="215" height="200" rx="6" fill="#fff" stroke="#000" stroke-width="2"/>
+<path d="M287,282 L287,256 Q287,250 293,250 L496,250 Q502,250 502,256 L502,282 Z" fill="#e6e6e6" stroke="#000" stroke-width="2"/>
+<text x="394.5" y="272" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" text-anchor="middle">users</text>
+<text x="297" y="299" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">id</text>
+<text x="492" y="299" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · PK</text>
+<text x="297" y="323" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">login</text>
+<text x="492" y="323" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">varchar(50) · UK</text>
+<text x="297" y="347" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">password_hash</text>
+<text x="492" y="347" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">text</text>
+<text x="297" y="371" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">role</text>
+<text x="492" y="371" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">varchar(16)</text>
+<text x="297" y="395" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">full_name</text>
+<text x="492" y="395" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">varchar(200)</text>
+<text x="297" y="419" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">is_active</text>
+<text x="492" y="419" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">boolean</text>
+<text x="297" y="443" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">created_at</text>
+<text x="492" y="443" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">timestamptz</text>
+<rect x="554" y="250" width="215" height="128" rx="6" fill="#fff" stroke="#000" stroke-width="2"/>
+<path d="M554,282 L554,256 Q554,250 560,250 L763,250 Q769,250 769,256 L769,282 Z" fill="#e6e6e6" stroke="#000" stroke-width="2"/>
+<text x="661.5" y="272" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" text-anchor="middle">students</text>
+<text x="564" y="299" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">id</text>
+<text x="759" y="299" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · PK</text>
+<text x="564" y="323" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">full_name</text>
+<text x="759" y="323" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">varchar(200)</text>
+<text x="564" y="347" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">group_id</text>
+<text x="759" y="347" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · FK</text>
+<text x="564" y="371" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">user_id</text>
+<text x="759" y="371" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · FK, UK</text>
+<rect x="20" y="600" width="215" height="200" rx="6" fill="#fff" stroke="#000" stroke-width="2"/>
+<path d="M20,632 L20,606 Q20,600 26,600 L229,600 Q235,600 235,606 L235,632 Z" fill="#e6e6e6" stroke="#000" stroke-width="2"/>
+<text x="127.5" y="622" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" text-anchor="middle">lessons</text>
+<text x="30" y="649" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">id</text>
+<text x="225" y="649" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · PK</text>
+<text x="30" y="673" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">lesson_date</text>
+<text x="225" y="673" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">date</text>
+<text x="30" y="697" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">pair_number</text>
+<text x="225" y="697" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">smallint</text>
+<text x="30" y="721" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">group_id</text>
+<text x="225" y="721" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · FK</text>
+<text x="30" y="745" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">subject_id</text>
+<text x="225" y="745" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · FK</text>
+<text x="30" y="769" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">teacher_id</text>
+<text x="225" y="769" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · FK</text>
+<text x="30" y="793" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">topic</text>
+<text x="225" y="793" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">varchar(500)</text>
+<rect x="287" y="720" width="215" height="152" rx="6" fill="#fff" stroke="#000" stroke-width="2"/>
+<path d="M287,752 L287,726 Q287,720 293,720 L496,720 Q502,720 502,726 L502,752 Z" fill="#e6e6e6" stroke="#000" stroke-width="2"/>
+<text x="394.5" y="742" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" text-anchor="middle">attendance</text>
+<text x="297" y="769" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">id</text>
+<text x="492" y="769" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · PK</text>
+<text x="297" y="793" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">lesson_id</text>
+<text x="492" y="793" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · FK</text>
+<text x="297" y="817" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">student_id</text>
+<text x="492" y="817" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">int · FK</text>
+<text x="297" y="841" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">status</text>
+<text x="492" y="841" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">varchar(16)</text>
+<text x="297" y="865" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400">note</text>
+<text x="492" y="865" font-family="Arial, Helvetica, sans-serif" font-size="12" text-anchor="end" fill="#333">varchar(500)</text></svg>

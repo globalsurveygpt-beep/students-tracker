@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="640" viewBox="0 0 800 640"><rect width="800" height="640" fill="#fff"/><defs><marker id="a" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#000"/></marker></defs>
+<rect x="150" y="20" width="500" height="80" rx="8" fill="#fff" stroke="#000" stroke-width="2"/>
+<text x="400.0" y="46" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Браузер пользователя</text>
+<text x="400.0" y="68" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle">HTML, CSS и JavaScript из каталога wwwroot</text>
+<text x="400.0" y="90" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle">запросы fetch к /api, cookie сессии</text>
+<path d="M380,100 L380,140" stroke="#000" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<path d="M420,140 L420,100" stroke="#000" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<text x="440" y="126" font-family="Arial, Helvetica, sans-serif" font-size="13">HTTP, JSON</text>
+<rect x="20" y="140" width="760" height="330" rx="10" fill="#f3f3f3" stroke="#000" stroke-width="2"/>
+<text x="400" y="166" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Веб-приложение ASP.NET Core 10</text>
+<rect x="40" y="184" width="230" height="110" rx="8" fill="#fff" stroke="#000" stroke-width="2"/>
+<text x="155.0" y="210" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Статические файлы</text>
+<text x="155.0" y="232" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle">index.html, app.js,</text>
+<text x="155.0" y="254" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle">app.css, шрифты Manrope</text>
+<rect x="290" y="184" width="470" height="110" rx="8" fill="#fff" stroke="#000" stroke-width="2"/>
+<text x="525.0" y="210" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Конвейер обработки запроса</text>
+<text x="525.0" y="232" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle">1. Проверка заголовка X-Requested-With (CSRF)</text>
+<text x="525.0" y="254" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle">2. Cookie-аутентификация, проверка штампа</text>
+<text x="525.0" y="276" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle">3. Авторизация по ролям admin, teacher, student</text>
+<rect x="40" y="316" width="720" height="70" rx="8" fill="#fff" stroke="#000" stroke-width="2"/>
+<text x="400.0" y="342" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Контроллеры API</text>
+<text x="400.0" y="364" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle">Auth, Users, Groups, Subjects, Students, Assignments, Lessons, Reports</text>
+<rect x="40" y="402" width="720" height="56" rx="8" fill="#fff" stroke="#000" stroke-width="2"/>
+<text x="400.0" y="428" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Доступ к данным</text>
+<text x="400.0" y="450" font-family="Arial, Helvetica, sans-serif" font-size="13" text-anchor="middle">EF Core 10: AppDbContext, миграции, провайдер Npgsql</text>
+<path d="M400,294 L400,316" stroke="#000" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<path d="M400,386 L400,402" stroke="#000" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<path d="M400,470 L400,520" stroke="#000" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<text x="415" y="500" font-family="Arial, Helvetica, sans-serif" font-size="13">SQL-запросы</text>
+<rect x="150" y="520" width="500" height="90" rx="8" fill="#fff" stroke="#000" stroke-width="2"/>
+<text x="400.0" y="546" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" text-anchor="middle">СУБД PostgreSQL 18</text>
+<text x="400.0" y="568" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle">7 таблиц, ограничения целостности,</text>
+<text x="400.0" y="590" font-family="Arial, Helvetica, sans-serif" font-size="14" text-anchor="middle">уникальные индексы, ON DELETE RESTRICT</text></svg>
