@@ -8,7 +8,7 @@
 
 | Область | Решение |
 |---|---|
-| Backend | C#, ASP.NET Core 10 (.NET 10 LTS); стиль API выбирается при создании каркаса и не смешивается |
+| Backend | C#, ASP.NET Core 10 (.NET 10 LTS); API на контроллерах (Controllers), Minimal API не смешиваем |
 | ORM | EF Core 10 + Npgsql (провайдер для EF Core 10), миграции |
 | БД | PostgreSQL 18 (установлен у владельца, защита на его компьютере) |
 | Frontend | Статичные HTML/CSS/JS в `wwwroot`, без фреймворков, `fetch` к REST API того же origin |
