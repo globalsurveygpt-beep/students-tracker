@@ -57,3 +57,6 @@ app.MapControllers();
 await AdminSeeder.SeedAsync(app.Services);
 
 app.Run();
+
+// Нужен интеграционным тестам (WebApplicationFactory).
+public partial class Program { }
