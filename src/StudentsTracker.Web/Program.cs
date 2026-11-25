@@ -5,7 +5,7 @@ using StudentsTracker.Web.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => options.Filters.Add<StudentsTracker.Web.Controllers.DbConflictFilter>());
 builder.Services.AddProblemDetails();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
