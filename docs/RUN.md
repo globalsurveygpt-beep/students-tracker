@@ -17,7 +17,7 @@
 ```powershell
 git clone https://github.com/globalsurveygpt-beep/students-tracker.git
 cd students-tracker
-git checkout develop
+git checkout main
 ```
 
 ## 3. Настроить секреты
